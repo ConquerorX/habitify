@@ -17,7 +17,7 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
     <div className="layout">
       {/* Mobile Top Header */}
       <header className="mobile-header glass">
-        <h2 className="title-gradient">Enesify</h2>
+        <h2 className="title-gradient">Hilal-ify ♥</h2>
         <button className="mobile-add-btn" onClick={() => setIsFormOpen(true)}>
           <Plus size={24} />
         </button>
@@ -26,7 +26,7 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
       {/* Desktop Sidebar */}
       <nav className="sidebar glass">
         <div className="logo">
-          <h2 className="title-gradient">Habitify</h2>
+          <h2 className="title-gradient">Hilal-ify ♥</h2>
         </div>
         <div className="nav-items">
           <NavItem
