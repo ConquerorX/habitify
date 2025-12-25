@@ -12,17 +12,17 @@ Coolify panelinde:
 ## 2. Uygulama Kurulumu
 Habitify uygulamasını Coolify'a eklerken:
 1. **GitHub Repository** olarak projeni seç.
-2. **Build Pack** olarak `Nixpacks` veya `Docker` seçebilirsin (Aşağıdaki Docker konfigürasyonu en sağlıklısıdır).
+2. **Build Pack** olarak kesinlikle **Docker** seç (Nixpacks bazen POST isteklerini engelleyen statik sunucu kurabiliyor, 405 hatasının çözümü budur).
 
 ## 3. Ortam Değişkenleri (Environment Variables)
 Uygulama ayarlarında **Variables** sekmesine şunları ekle:
 - `DATABASE_URL`: Az önce kopyaladığın PostgreSQL URL'i.
 - `JWT_SECRET`: Güçlü ve rastgele bir anahtar (Örn: `habitify_secret_key_2025`).
-- `VITE_API_BASE_URL`: Uygulamanın yayınlanacağı tam URL (Örn: `https://habitify.dural.qzz.io/api`).
+- `VITE_API_BASE_URL`: https://habitify.dural.qzz.io/api
 - `PORT`: `5000` (Backend için).
 
-## 4. Docker Konfigürasyonu (Tavsiye Edilen)
-Projenin kök dizinine aşağıdaki `Dockerfile` dosyasını ekledim. Coolify bunu otomatik tanıyacaktır.
+## 4. Docker Konfigürasyonu
+Projenin kök dizinine bir `Dockerfile` ekledim. Coolify bunu otomatik tanıyacaktır. Eğer tanımazsa **Configuration** sekmesinden "Dockerfile" yolunun `/Dockerfile` olduğundan emin ol.
 
 ```dockerfile
 # Build Frontend
