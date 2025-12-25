@@ -4,18 +4,17 @@ import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, 
 const StatsView = () => {
     const { habits } = useHabits();
 
-    // Calculate time distribution (hours per category)
     const calculateTotalHours = (start: string | undefined, end: string | undefined) => {
         if (!start || !end) return 0;
         const [h1, m1] = start.split(':').map(Number);
         const [h2, m2] = end.split(':').map(Number);
         let diff = (h2 * 60 + m2) - (h1 * 60 + m1);
-        if (diff < 0) diff += 24 * 60; // Handle overnight
+        if (diff < 0) diff += 24 * 60;
         return diff / 60;
     };
 
     const timeDistribution = habits.reduce((acc: any[], habit) => {
-        const hours = calculateTotalHours(habit.startTime, habit.endTime) || 1; // Default 1 hour if no time set
+        const hours = calculateTotalHours(habit.startTime, habit.endTime) || 1;
         const category = habit.category || 'Genel';
         const existing = acc.find(item => item.name === category);
         if (existing) {
@@ -34,7 +33,6 @@ const StatsView = () => {
 
     const COLORS = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#d946ef'];
 
-    // Completion data for the bar chart
     const days = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
     const completionData = days.map(day => ({
         name: day,
@@ -45,48 +43,49 @@ const StatsView = () => {
     return (
         <div className="view-container">
             <header className="view-header">
-                <h1>Analiz ve İstatistikler</h1>
-                <p>Planladığın zamanın nasıl dağıldığını ve ilerlemeni gör.</p>
+                <h1>Analiz</h1>
+                <p>Gelişimini ve zaman dağılımını takip et.</p>
             </header>
 
             <div className="stats-grid">
-                <div className="stat-card glass pie-chart-container">
+                <div className="stat-card glass chart-card">
                     <h3>Zaman Dağılımı (%)</h3>
-                    <div style={{ width: '100%', height: 300 }}>
-                        <ResponsiveContainer>
+                    <div className="chart-wrapper">
+                        <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
                                     data={timeDataWithPercent}
                                     cx="50%"
                                     cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={100}
+                                    innerRadius="60%"
+                                    outerRadius="80%"
                                     paddingAngle={5}
                                     dataKey="value"
-                                    label={({ name, percent }) => `${name} %${percent}`}
+                                    label={({ name, percent }) => percent > 5 ? `${name}` : ''}
                                 >
                                     {timeDataWithPercent.map((_entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
-                                <Tooltip />
+                                <Tooltip
+                                    contentStyle={{ background: 'rgba(20,20,20,0.9)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '12px' }}
+                                />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
-                <div className="stat-card glass bar-chart-container">
+                <div className="stat-card glass chart-card">
                     <h3>Haftalık Performans</h3>
-                    <div style={{ width: '100%', height: 300 }}>
-                        <ResponsiveContainer>
+                    <div className="chart-wrapper">
+                        <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={completionData}>
-                                <XAxis dataKey="name" stroke="var(--text-secondary)" />
-                                <YAxis stroke="var(--text-secondary)" />
+                                <XAxis dataKey="name" stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} />
                                 <Tooltip
-                                    contentStyle={{ background: 'var(--panel-bg)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                                    contentStyle={{ background: 'rgba(20,20,20,0.9)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '12px' }}
                                 />
-                                <Legend />
-                                <Bar name="Tamamlanan" dataKey="tamamlanan" fill="var(--accent-primary)" radius={[4, 4, 0, 0]} />
+                                <Bar name="Tamam" dataKey="tamamlanan" fill="var(--accent-primary)" radius={[4, 4, 0, 0]} />
                                 <Bar name="Hedef" dataKey="hedef" fill="rgba(255,255,255,0.05)" radius={[4, 4, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
@@ -95,15 +94,15 @@ const StatsView = () => {
 
                 <div className="stat-card glass summary-stats">
                     <div className="summary-item">
-                        <span className="summary-label">Aktif Planlar</span>
+                        <span className="summary-label">Planlar</span>
                         <span className="summary-value">{habits.length}</span>
                     </div>
                     <div className="summary-item">
-                        <span className="summary-label">En Yüksek Seri</span>
+                        <span className="summary-label">En İyi Seri</span>
                         <span className="summary-value">{Math.max(0, ...habits.map(h => h.streak))}</span>
                     </div>
                     <div className="summary-item">
-                        <span className="summary-label">Toplam Verimlilik</span>
+                        <span className="summary-label">Verimlilik</span>
                         <span className="summary-value">
                             {habits.length > 0 ?
                                 Math.round((habits.reduce((acc, h) => acc + h.completedDates.length, 0) / (habits.length * 7)) * 100)
@@ -115,14 +114,52 @@ const StatsView = () => {
 
             <style>{`
         .view-container { max-width: 1000px; margin: 0 auto; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; }
-        .stat-card { padding: 2rem; border-radius: 24px; }
-        .stat-card h3 { margin-bottom: 2rem; font-size: 1.125rem; }
-        .summary-stats { grid-column: 1 / -1; display: flex; justify-content: space-around; text-align: center; }
+        .view-header { margin-bottom: 2rem; }
+        .view-header p { color: var(--text-secondary); margin-top: 4px; }
+        
+        .stats-grid { 
+          display: grid; 
+          grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); 
+          gap: 1.5rem; 
+        }
+
+        .stat-card { 
+          padding: 1.5rem; 
+          border-radius: 24px; 
+          display: flex;
+          flex-direction: column;
+        }
+
+        .stat-card h3 { 
+          margin-bottom: 1.5rem; 
+          font-size: 1rem; 
+          font-weight: 600;
+          color: var(--text-primary);
+        }
+
+        .chart-wrapper {
+          width: 100%;
+          height: 250px;
+        }
+
+        .summary-stats { 
+          grid-column: 1 / -1; 
+          display: flex; 
+          justify-content: space-around; 
+          text-align: center;
+          padding: 2rem 1.5rem;
+        }
+
         .summary-item { display: flex; flex-direction: column; gap: 0.5rem; }
-        .summary-label { color: var(--text-secondary); font-size: 0.875rem; }
-        .summary-value { font-size: 2rem; font-weight: 700; color: var(--accent-primary); }
-        @media (max-width: 768px) { .stats-grid { grid-template-columns: 1fr; } }
+        .summary-label { color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
+        .summary-value { font-size: 1.75rem; font-weight: 700; color: var(--accent-primary); }
+
+        @media (max-width: 768px) { 
+          .stats-grid { grid-template-columns: 1fr; gap: 1rem; } 
+          .summary-stats { flex-direction: row; flex-wrap: wrap; gap: 1.5rem; }
+          .summary-item { flex: 1; min-width: 100px; }
+          .summary-value { font-size: 1.5rem; }
+        }
       `}</style>
         </div>
     );

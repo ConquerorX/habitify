@@ -97,32 +97,40 @@ const HabitForm = ({ onClose }: HabitFormProps) => {
         .modal-overlay {
           position: fixed;
           top: 0; left: 0; right: 0; bottom: 0;
-          background: rgba(0, 0, 0, 0.6);
+          background: rgba(0, 0, 0, 0.7);
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 1000;
-          backdrop-filter: blur(4px);
+          backdrop-filter: blur(8px);
+          padding: 1rem;
         }
         .habit-form-modal {
           width: 100%;
-          max-width: 450px;
+          max-width: 480px;
           padding: 2rem;
-          border-radius: 24px;
+          border-radius: 28px;
+          position: relative;
         }
         .modal-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 2rem;
+          margin-bottom: 1.5rem;
         }
         .close-btn {
-          background: none; border: none;
+          background: rgba(255,255,255,0.05);
+          border: 1px solid var(--border-color);
           color: var(--text-secondary);
+          width: 36px; height: 36px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           cursor: pointer;
         }
         .form-group {
-          margin-bottom: 1.5rem;
+          margin-bottom: 1.25rem;
           display: flex;
           flex-direction: column;
           gap: 0.5rem;
@@ -133,19 +141,21 @@ const HabitForm = ({ onClose }: HabitFormProps) => {
           gap: 1rem;
         }
         .form-group label {
-          font-size: 0.875rem;
+          font-size: 0.8rem;
+          font-weight: 500;
           color: var(--text-secondary);
           display: flex;
           align-items: center;
           gap: 0.5rem;
         }
         .form-group input, .form-group select {
-          padding: 0.75rem 1rem;
+          padding: 0.8rem 1rem;
           background: rgba(255, 255, 255, 0.05);
           border: 1px solid var(--border-color);
-          border-radius: 12px;
+          border-radius: 14px;
           color: white;
           outline: none;
+          font-size: 1rem;
         }
         .form-group input:focus, .form-group select:focus {
           border-color: var(--accent-primary);
@@ -153,6 +163,18 @@ const HabitForm = ({ onClose }: HabitFormProps) => {
         .submit-btn {
           width: 100%;
           margin-top: 1rem;
+          height: 54px;
+          font-size: 1.1rem;
+        }
+
+        @media (max-width: 768px) {
+          .habit-form-modal {
+            padding: 1.5rem;
+          }
+          .form-row {
+            flex-direction: column;
+            gap: 0;
+          }
         }
       `}</style>
     </div>
