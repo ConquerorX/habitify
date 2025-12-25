@@ -18,6 +18,7 @@ Habitify uygulamasını Coolify'a eklerken:
 Uygulama ayarlarında **Variables** sekmesine şunları ekle:
 - `DATABASE_URL`: Az önce kopyaladığın PostgreSQL URL'i.
 - `JWT_SECRET`: Güçlü ve rastgele bir anahtar (Örn: `habitify_secret_key_2025`).
+- `VITE_API_BASE_URL`: Uygulamanın yayınlanacağı tam URL (Örn: `https://habitify.dural.qzz.io/api`).
 - `PORT`: `5000` (Backend için).
 
 ## 4. Docker Konfigürasyonu (Tavsiye Edilen)

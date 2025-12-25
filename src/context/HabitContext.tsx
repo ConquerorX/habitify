@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import { HABITS_API_URL } from '../config';
 
 export type Frequency = 'daily' | 'weekly' | 'monthly';
 
@@ -24,8 +25,6 @@ interface HabitContextType {
 }
 
 const HabitContext = createContext<HabitContextType | undefined>(undefined);
-
-const API_URL = 'http://localhost:5000/api';
 
 export const HabitProvider = ({ children }: { children: React.ReactNode }) => {
     const [habits, setHabits] = useState<Habit[]>([]);
@@ -56,7 +55,7 @@ export const HabitProvider = ({ children }: { children: React.ReactNode }) => {
     const refreshHabits = async () => {
         if (!token) return;
         try {
-            const res = await fetch(`${API_URL}/habits`, {
+            const res = await fetch(`${HABITS_API_URL}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {
@@ -80,7 +79,7 @@ export const HabitProvider = ({ children }: { children: React.ReactNode }) => {
     const addHabit = async (newHabit: Omit<Habit, 'id' | 'completedDates' | 'streak' | 'createdAt'>) => {
         if (!token) return;
         try {
-            const res = await fetch(`${API_URL}/habits`, {
+            const res = await fetch(`${HABITS_API_URL}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -97,7 +96,7 @@ export const HabitProvider = ({ children }: { children: React.ReactNode }) => {
     const toggleHabit = async (id: string, date: string) => {
         if (!token) return;
         try {
-            const res = await fetch(`${API_URL}/habits/${id}/toggle`, {
+            const res = await fetch(`${HABITS_API_URL}/${id}/toggle`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -114,7 +113,7 @@ export const HabitProvider = ({ children }: { children: React.ReactNode }) => {
     const deleteHabit = async (id: string) => {
         if (!token) return;
         try {
-            const res = await fetch(`${API_URL}/habits/${id}`, {
+            const res = await fetch(`${HABITS_API_URL}/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

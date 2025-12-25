@@ -2,107 +2,108 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, User, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { AUTH_API_URL } from '../config';
 
 const AuthView = () => {
-    const [isLogin, setIsLogin] = useState(true);
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [name, setName] = useState('');
-    const [error, setError] = useState('');
-    const { login } = useAuth();
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [error, setError] = useState('');
+  const { login } = useAuth();
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
 
-        const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-        const body = isLogin ? { email, password } : { email, password, name };
+    const endpoint = isLogin ? '/login' : '/register';
+    const body = isLogin ? { email, password } : { email, password, name };
 
-        try {
-            const res = await fetch(`http://localhost:5000${endpoint}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-            const data = await res.json();
+    try {
+      const res = await fetch(`${AUTH_API_URL}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
 
-            if (res.ok) {
-                login(data.token, data.user);
-            } else {
-                setError(data.message || 'Bir hata oluştu');
-            }
-        } catch (err) {
-            setError('Bağlantı hatası');
-        }
-    };
+      if (res.ok) {
+        login(data.token, data.user);
+      } else {
+        setError(data.message || 'Bir hata oluştu');
+      }
+    } catch (err) {
+      setError('Bağlantı hatası');
+    }
+  };
 
-    return (
-        <div className="auth-container">
-            <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="auth-card glass"
-            >
-                <div className="auth-header">
-                    <h1 className="title-gradient">Habitify</h1>
-                    <p>{isLogin ? 'Tekrar hoş geldin!' : 'Yeni bir başlangıç yap.'}</p>
-                </div>
+  return (
+    <div className="auth-container">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="auth-card glass"
+      >
+        <div className="auth-header">
+          <h1 className="title-gradient">Habitify</h1>
+          <p>{isLogin ? 'Tekrar hoş geldin!' : 'Yeni bir başlangıç yap.'}</p>
+        </div>
 
-                <form onSubmit={handleSubmit}>
-                    {!isLogin && (
-                        <div className="auth-input-group">
-                            <User size={20} />
-                            <input
-                                type="text"
-                                placeholder="Ad Soyad"
-                                value={name}
-                                onChange={e => setName(e.target.value)}
-                                required={!isLogin}
-                            />
-                        </div>
-                    )}
+        <form onSubmit={handleSubmit}>
+          {!isLogin && (
+            <div className="auth-input-group">
+              <User size={20} />
+              <input
+                type="text"
+                placeholder="Ad Soyad"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                required={!isLogin}
+              />
+            </div>
+          )}
 
-                    <div className="auth-input-group">
-                        <Mail size={20} />
-                        <input
-                            type="email"
-                            placeholder="E-posta"
-                            value={email}
-                            onChange={e => setEmail(e.target.value)}
-                            required
-                        />
-                    </div>
+          <div className="auth-input-group">
+            <Mail size={20} />
+            <input
+              type="email"
+              placeholder="E-posta"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+            />
+          </div>
 
-                    <div className="auth-input-group">
-                        <Lock size={20} />
-                        <input
-                            type="password"
-                            placeholder="Şifre"
-                            value={password}
-                            onChange={e => setPassword(e.target.value)}
-                            required
-                        />
-                    </div>
+          <div className="auth-input-group">
+            <Lock size={20} />
+            <input
+              type="password"
+              placeholder="Şifre"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+            />
+          </div>
 
-                    {error && <p className="auth-error">{error}</p>}
+          {error && <p className="auth-error">{error}</p>}
 
-                    <button type="submit" className="btn btn-primary auth-submit">
-                        {isLogin ? 'Giriş Yap' : 'Kayıt Ol'}
-                        <ArrowRight size={18} />
-                    </button>
-                </form>
+          <button type="submit" className="btn btn-primary auth-submit">
+            {isLogin ? 'Giriş Yap' : 'Kayıt Ol'}
+            <ArrowRight size={18} />
+          </button>
+        </form>
 
-                <div className="auth-footer">
-                    <p>
-                        {isLogin ? 'Hesabın yok mu?' : 'Zaten üye misin?'}
-                        <button onClick={() => setIsLogin(!isLogin)} className="toggle-auth">
-                            {isLogin ? ' Hemen Kayıt Ol' : ' Giriş Yap'}
-                        </button>
-                    </p>
-                </div>
-            </motion.div>
+        <div className="auth-footer">
+          <p>
+            {isLogin ? 'Hesabın yok mu?' : 'Zaten üye misin?'}
+            <button onClick={() => setIsLogin(!isLogin)} className="toggle-auth">
+              {isLogin ? ' Hemen Kayıt Ol' : ' Giriş Yap'}
+            </button>
+          </p>
+        </div>
+      </motion.div>
 
-            <style>{`
+      <style>{`
         .auth-container {
           min-height: 100vh;
           display: flex;
@@ -174,8 +175,8 @@ const AuthView = () => {
           margin-bottom: 1rem;
         }
       `}</style>
-        </div>
-    );
+    </div>
+  );
 };
 
 export default AuthView;
