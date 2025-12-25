@@ -1,5 +1,5 @@
 import { useHabits } from '../context/HabitContext';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, Tooltip } from 'recharts';
 
 const StatsView = () => {
     const { habits } = useHabits();
@@ -61,7 +61,7 @@ const StatsView = () => {
                                     outerRadius="80%"
                                     paddingAngle={5}
                                     dataKey="value"
-                                    label={({ name, percent }) => percent > 5 ? `${name}` : ''}
+                                    label={({ name, percent }) => (percent !== undefined && percent > 5) ? `${name}` : ''}
                                 >
                                     {timeDataWithPercent.map((_entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
