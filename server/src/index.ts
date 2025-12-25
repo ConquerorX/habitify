@@ -27,8 +27,8 @@ app.get('/health', (req, res) => {
 const publicPath = path.join(__dirname, '../public');
 app.use(express.static(publicPath));
 
-// Fallback to index.html for SPA routing
-app.get('*', (req, res) => {
+// Fallback to index.html for SPA routing (Express 5 syntax)
+app.get('/{*splat}', (req, res) => {
     res.sendFile(path.join(publicPath, 'index.html'));
 });
 
