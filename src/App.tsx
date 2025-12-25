@@ -5,10 +5,25 @@ import DashboardView from './views/DashboardView';
 import HabitsView from './views/HabitsView';
 import StatsView from './views/StatsView';
 import SettingsView from './views/SettingsView';
-import { motion, AnimatePresence } from 'framer-motion';
+import AuthView from './views/AuthView';
+import { useAuth } from './context/AuthContext';
+import { AnimatePresence, motion } from 'framer-motion';
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="loading-screen">
+        <h1 className="title-gradient">Habitify</h1>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthView />;
+  }
 
   const renderView = () => {
     switch (activeTab) {
@@ -25,9 +40,9 @@ function App() {
       <AnimatePresence mode="wait">
         <motion.div
           key={activeTab}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
           transition={{ duration: 0.2 }}
         >
           {renderView()}

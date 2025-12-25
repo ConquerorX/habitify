@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Home, List, PieChart, Settings, Plus } from 'lucide-react';
+import { Home, List, PieChart, Settings, Plus, LogOut, User as UserIcon } from 'lucide-react';
 import HabitForm from './HabitForm';
+import { useAuth } from '../context/AuthContext';
 
 export type TabType = 'dashboard' | 'habits' | 'stats' | 'settings';
 
@@ -12,21 +13,27 @@ interface LayoutProps {
 
 const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   return (
     <div className="layout">
       {/* Mobile Top Header */}
       <header className="mobile-header glass">
-        <h2 className="title-gradient">Hilal-ify ♥</h2>
-        <button className="mobile-add-btn" onClick={() => setIsFormOpen(true)}>
-          <Plus size={24} />
-        </button>
+        <h2 className="title-gradient">Habitify</h2>
+        <div className="mobile-header-actions">
+          <button className="mobile-add-btn" onClick={() => setIsFormOpen(true)}>
+            <Plus size={24} />
+          </button>
+          <button className="logout-btn-minimal" onClick={logout}>
+            <LogOut size={20} />
+          </button>
+        </div>
       </header>
 
       {/* Desktop Sidebar */}
       <nav className="sidebar glass">
         <div className="logo">
-          <h2 className="title-gradient">Hilal-ify ♥</h2>
+          <h2 className="title-gradient">Habitify</h2>
         </div>
         <div className="nav-items">
           <NavItem
@@ -58,6 +65,22 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
           <Plus size={20} />
           <span>Yeni Alışkanlık</span>
         </button>
+
+        <div className="sidebar-footer">
+          <div className="user-profile">
+            <div className="user-avatar">
+              <UserIcon size={18} />
+            </div>
+            <div className="user-info">
+              <span className="user-name">{user?.name || 'Kullanıcı'}</span>
+              <span className="user-email">{user?.email}</span>
+            </div>
+          </div>
+          <button className="logout-btn" onClick={logout}>
+            <LogOut size={18} />
+            <span>Çıkış Yap</span>
+          </button>
+        </div>
       </nav>
 
       {/* Mobile Bottom Navigation */}
@@ -116,6 +139,19 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
           align-items: center;
           justify-content: center;
           box-shadow: 0 4px 12px rgba(var(--accent-primary-rgb), 0.3);
+        }
+
+        .mobile-header-actions {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
+        .logout-btn-minimal {
+          background: none;
+          border: none;
+          color: var(--text-secondary);
+          padding: 8px;
         }
 
         .sidebar {
@@ -200,8 +236,72 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
         }
 
         .add-habit-btn {
-          margin-top: auto;
           width: 100%;
+        }
+
+        .sidebar-footer {
+          margin-top: auto;
+          display: flex;
+          flex-direction: column;
+          gap: 1.5rem;
+          padding-top: 2rem;
+          border-top: 1px solid var(--border-color);
+        }
+
+        .user-profile {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
+        .user-avatar {
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          background: rgba(var(--accent-primary-rgb), 0.1);
+          color: var(--accent-primary);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .user-info {
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+
+        .user-name {
+          font-size: 0.9rem;
+          font-weight: 600;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+
+        .user-email {
+          font-size: 0.7rem;
+          color: var(--text-secondary);
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+
+        .logout-btn {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.75rem 1rem;
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid var(--border-color);
+          border-radius: 12px;
+          color: var(--text-secondary);
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+          background: rgba(239, 68, 68, 0.1);
+          color: #ef4444;
+          border-color: rgba(239, 68, 68, 0.2);
         }
 
         @media (max-width: 1024px) {
