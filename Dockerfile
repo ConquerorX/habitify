@@ -2,7 +2,8 @@
 FROM node:22-slim AS frontend-builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+# Ensure devDependencies are installed for the build phase, even if NODE_ENV=production
+RUN npm install --include=dev
 COPY . .
 RUN npm run build
 
@@ -10,7 +11,7 @@ RUN npm run build
 FROM node:22-slim AS backend-builder
 WORKDIR /app
 COPY server/package*.json ./server/
-RUN cd server && npm install
+RUN cd server && npm install --include=dev
 COPY server ./server/
 RUN cd server && npx prisma generate && npm run build
 
