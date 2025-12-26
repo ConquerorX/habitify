@@ -1,10 +1,14 @@
-import { CheckCircle2, Flame, Award, Trash2, Play, Clock } from 'lucide-react';
+import { CheckCircle2, Flame, Award, Trash2, Play, Clock, Edit2 } from 'lucide-react';
 import { useHabits } from '../context/HabitContext';
 import type { Habit } from '../context/HabitContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import InfoTooltip from '../components/InfoTooltip';
+import { useState } from 'react';
+import HabitForm from '../components/HabitForm';
 
 const DashboardView = () => {
   const { habits, toggleHabit, deleteHabit } = useHabits();
+  const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const today = new Date().toISOString().split('T')[0];
 
   const completedToday = habits.filter(h => h.completedDates.includes(today)).length;
@@ -44,19 +48,32 @@ const DashboardView = () => {
           <div className="stat-item">
             <Flame className={overallStreak > 0 ? 'active-flame' : ''} size={24} />
             <div>
-              <span className="stat-value">{overallStreak}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span className="stat-value">{overallStreak}</span>
+                <InfoTooltip text="Alışkanlıklarınızı her gün tamamladıkça artan seriniz." />
+              </div>
               <span className="stat-label">Seri</span>
             </div>
           </div>
           <div className="stat-item">
             <Award color="#facc15" size={24} />
             <div>
-              <span className="stat-value">{habits.filter(h => h.streak >= 7).length}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span className="stat-value">{habits.filter(h => h.streak >= 7).length}</span>
+                <InfoTooltip text="7 gün veya daha uzun süren serilere sahip alışkanlık sayınız." />
+              </div>
               <span className="stat-label">Başarı</span>
             </div>
           </div>
         </div>
       </header>
+
+      {editingHabit && (
+        <HabitForm
+          initialData={editingHabit}
+          onClose={() => setEditingHabit(null)}
+        />
+      )}
 
       <section className="progress-section glass">
         <div className="progress-info">
@@ -91,6 +108,7 @@ const DashboardView = () => {
                   completed={habit.completedDates.includes(today)}
                   onToggle={() => toggleHabit(habit.id, today)}
                   onDelete={() => deleteHabit(habit.id)}
+                  onEdit={() => setEditingHabit(habit)}
                 />
               ))
             )}
@@ -174,7 +192,7 @@ const DashboardView = () => {
 
         .progress-bar-bg {
           height: 14px;
-          background: rgba(255, 255, 255, 0.05);
+          background: var(--input-bg);
           border-radius: 7px;
           overflow: hidden;
         }
@@ -238,7 +256,7 @@ const DashboardView = () => {
         .freq-badge {
           font-size: 0.7rem;
           color: var(--text-secondary);
-          background: rgba(255,255,255,0.05);
+          background: var(--input-bg);
           padding: 2px 6px;
           border-radius: 4px;
         }
@@ -246,7 +264,7 @@ const DashboardView = () => {
         .habit-actions {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
+          gap: 0.75rem;
         }
 
         .complete-btn {
@@ -256,10 +274,10 @@ const DashboardView = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(255, 255, 255, 0.05);
+          background: var(--btn-secondary-bg);
           border: 1px solid var(--border-color);
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .complete-btn.completed {
@@ -272,14 +290,18 @@ const DashboardView = () => {
         .delete-btn {
           background: none;
           border: none;
-          color: rgba(255, 255, 255, 0.1);
+          color: rgba(var(--text-primary-rgb), 0.15);
           cursor: pointer;
           padding: 8px;
-          transition: color 0.2s;
+          transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .delete-btn:hover {
           color: #ef4444;
+          transform: scale(1.1);
         }
 
         @media (max-width: 768px) {
@@ -298,9 +320,25 @@ const DashboardView = () => {
           }
           .habits-grid {
             grid-template-columns: 1fr;
+            gap: 1rem;
           }
           .habit-card {
-            padding: 1rem;
+            padding: 1.25rem;
+            flex-direction: column;
+            align-items: stretch;
+            position: relative;
+            gap: 1.25rem;
+          }
+          .habit-info {
+            padding-right: 120px;
+          }
+          .habit-actions {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.25rem;
+            gap: 0.5rem;
+            padding-top: 0;
+            border-top: none;
           }
           .complete-btn {
             width: 44px;
@@ -323,7 +361,7 @@ const DashboardView = () => {
   );
 };
 
-const HabitCard = ({ habit, completed, onToggle, onDelete }: { habit: Habit, completed: boolean, onToggle: () => void, onDelete: () => void }) => (
+const HabitCard = ({ habit, completed, onToggle, onDelete, onEdit }: { habit: Habit, completed: boolean, onToggle: () => void, onDelete: () => void, onEdit: () => void }) => (
   <motion.div layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="habit-card glass">
     <div className="habit-info">
       {habit.startTime && (
@@ -342,7 +380,10 @@ const HabitCard = ({ habit, completed, onToggle, onDelete }: { habit: Habit, com
       )}
     </div>
     <div className="habit-actions">
-      <button className="delete-btn" onClick={onDelete}>
+      <button className="delete-btn" onClick={onEdit} title="Düzenle">
+        <Edit2 size={16} />
+      </button>
+      <button className="delete-btn" onClick={onDelete} title="Sil">
         <Trash2 size={18} />
       </button>
       <motion.button

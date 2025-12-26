@@ -164,6 +164,8 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
           background-color: var(--bg-color);
           flex-direction: column;
           --sidebar-width: 280px;
+          max-width: 100vw;
+          overflow-x: hidden;
         }
 
         .layout.sidebar-collapsed {
@@ -278,7 +280,7 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
         .mobile-header-actions {
           display: flex;
           align-items: center;
-          gap: 0.75rem;
+          gap: 1.25rem;
         }
 
         .logout-btn-minimal {
@@ -401,8 +403,8 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
           flex: 1;
           padding: 2.5rem;
           min-height: 100vh;
-          width: 100%;
           transition: margin-left 0.3s ease;
+          overflow-x: hidden;
         }
 
         .nav-items {
@@ -504,7 +506,7 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
           justify-content: center;
           gap: 0.75rem;
           padding: 0.75rem 1rem;
-          background: rgba(255, 255, 255, 0.03);
+          background: var(--btn-secondary-bg);
           border: 1px solid var(--border-color);
           border-radius: 12px;
           color: var(--text-secondary);

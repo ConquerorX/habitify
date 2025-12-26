@@ -21,6 +21,7 @@ interface HabitContextType {
     addHabit: (habit: Omit<Habit, 'id' | 'completedDates' | 'streak' | 'createdAt'>) => Promise<void>;
     toggleHabit: (id: string, date: string) => Promise<void>;
     deleteHabit: (id: string) => Promise<void>;
+    updateHabit: (id: string, habit: Partial<Habit>) => Promise<void>;
     refreshHabits: () => Promise<void>;
 }
 
@@ -123,8 +124,35 @@ export const HabitProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
+    const updateHabit = async (id: string, habit: Partial<Habit>) => {
+        if (!token) return;
+        try {
+            console.log(`Sending PUT request to update habit ${id}`, habit);
+            const res = await fetch(`${HABITS_API_URL}/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(habit)
+            });
+
+            console.log(`Update habit response status: ${res.status}`);
+
+            if (res.ok) {
+                console.log('Update success, refreshing habits...');
+                refreshHabits();
+            } else {
+                const errorData = await res.json();
+                console.error('Update habit failed:', errorData);
+            }
+        } catch (error) {
+            console.error('Update habit error:', error);
+        }
+    };
+
     return (
-        <HabitContext.Provider value={{ habits, addHabit, toggleHabit, deleteHabit, refreshHabits }}>
+        <HabitContext.Provider value={{ habits, addHabit, toggleHabit, deleteHabit, updateHabit, refreshHabits }}>
             {children}
         </HabitContext.Provider>
     );

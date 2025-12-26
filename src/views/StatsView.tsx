@@ -1,5 +1,6 @@
 import { useHabits } from '../context/HabitContext';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, Tooltip } from 'recharts';
+import InfoTooltip from '../components/InfoTooltip';
 
 const StatsView = () => {
     const { habits } = useHabits();
@@ -49,7 +50,10 @@ const StatsView = () => {
 
             <div className="stats-grid">
                 <div className="stat-card glass chart-card">
-                    <h3>Zaman Dağılımı (%)</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem' }}>
+                        <h3 style={{ margin: 0 }}>Zaman Dağılımı (%)</h3>
+                        <InfoTooltip text="Alışkanlıklarınıza ayırdığınız toplam sürenin kategorilere göre dağılımı." />
+                    </div>
                     <div className="chart-wrapper">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -68,7 +72,8 @@ const StatsView = () => {
                                     ))}
                                 </Pie>
                                 <Tooltip
-                                    contentStyle={{ background: 'rgba(20,20,20,0.9)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '12px' }}
+                                    contentStyle={{ background: 'var(--panel-bg)', backdropFilter: 'var(--glass-blur)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '12px', color: 'var(--text-primary)' }}
+                                    itemStyle={{ color: 'var(--text-primary)' }}
                                 />
                             </PieChart>
                         </ResponsiveContainer>
@@ -76,17 +81,21 @@ const StatsView = () => {
                 </div>
 
                 <div className="stat-card glass chart-card">
-                    <h3>Haftalık Performans</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem' }}>
+                        <h3 style={{ margin: 0 }}>Haftalık Performans</h3>
+                        <InfoTooltip text="Son 7 gündeki günlük tamamlanma oranlarınız." />
+                    </div>
                     <div className="chart-wrapper">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={completionData}>
                                 <XAxis dataKey="name" stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} />
                                 <Tooltip
-                                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                                    contentStyle={{ background: 'rgba(20,20,20,0.9)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '12px' }}
+                                    cursor={{ fill: 'var(--input-bg)' }}
+                                    contentStyle={{ background: 'var(--panel-bg)', backdropFilter: 'var(--glass-blur)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '12px', color: 'var(--text-primary)' }}
+                                    itemStyle={{ color: 'var(--text-primary)' }}
                                 />
                                 <Bar name="Tamam" dataKey="tamamlanan" fill="var(--accent-primary)" radius={[4, 4, 0, 0]} />
-                                <Bar name="Hedef" dataKey="hedef" fill="rgba(255,255,255,0.05)" radius={[4, 4, 0, 0]} />
+                                <Bar name="Hedef" dataKey="hedef" fill="var(--input-bg)" radius={[4, 4, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>

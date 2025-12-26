@@ -64,6 +64,30 @@ router.patch('/:id/toggle', authenticateToken, async (req: AuthRequest, res: Res
     }
 });
 
+// Update habit
+router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response) => {
+    try {
+        const { title, category, frequency, startTime, endTime } = req.body;
+        const habit = await prisma.habit.findUnique({ where: { id: req.params.id } });
+
+        if (!habit || habit.userId !== req.userId) {
+            return res.status(404).json({ message: 'Alışkanlık bulunamadı' });
+        }
+
+        console.log(`Updating habit ${req.params.id} with data:`, { title, category, frequency, startTime, endTime });
+
+        const updatedHabit = await prisma.habit.update({
+            where: { id: req.params.id },
+            data: { title, category, frequency, startTime, endTime }
+        });
+
+        console.log('Habit updated successfully:', updatedHabit.id);
+        res.json(updatedHabit);
+    } catch (error) {
+        res.status(500).json({ message: 'Sunucu hatası' });
+    }
+});
+
 // Delete habit
 router.delete('/:id', authenticateToken, async (req: AuthRequest, res: Response) => {
     try {

@@ -110,7 +110,7 @@ const AuthView = () => {
           align-items: center;
           justify-content: center;
           padding: 1.5rem;
-          background: #050505;
+          background: var(--bg-color);
         }
         .auth-card {
           width: 100%;
@@ -131,7 +131,7 @@ const AuthView = () => {
           margin-bottom: 1rem;
           display: flex;
           align-items: center;
-          background: rgba(255, 255, 255, 0.05);
+          background: var(--input-bg);
           border: 1px solid var(--border-color);
           border-radius: 16px;
           padding: 0 1rem;
@@ -144,7 +144,7 @@ const AuthView = () => {
           padding: 1rem;
           background: none;
           border: none;
-          color: white;
+          color: var(--text-primary);
           outline: none;
           font-size: 1rem;
         }

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { ADMIN_API_URL } from '../config';
 import { motion, AnimatePresence } from 'framer-motion';
+import InfoTooltip from '../components/InfoTooltip';
 import {
   Users,
   Activity,
@@ -236,7 +237,10 @@ const AdminView = ({ onNavigate }: { onNavigate?: (tab: string) => void }) => {
               <Activity size={24} />
             </div>
             <div className="stat-info">
-              <span className="stat-value">{stats.activeUsers}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span className="stat-value">{stats.activeUsers}</span>
+                <InfoTooltip text="Son 24 saat içinde en az bir alışkanlığını tamamlayan kullanıcı sayısı." />
+              </div>
               <span className="stat-label">Aktif Kullanıcı</span>
             </div>
           </motion.div>
@@ -608,13 +612,14 @@ const AdminView = ({ onNavigate }: { onNavigate?: (tab: string) => void }) => {
 
         .admin-badge {
           display: inline-block;
-          background: linear-gradient(135deg, #6366f1, #8b5cf6);
+          background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
           padding: 2px 8px;
           border-radius: 4px;
           font-size: 0.65rem;
           font-weight: 600;
           text-transform: uppercase;
           margin-top: 2px;
+          color: white;
         }
 
         .habit-count {
@@ -629,19 +634,20 @@ const AdminView = ({ onNavigate }: { onNavigate?: (tab: string) => void }) => {
 
         .actions-cell {
           display: flex;
-          gap: 0.5rem;
+          align-items: center;
+          gap: 0.75rem;
         }
 
         .action-btn {
-          width: 32px;
-          height: 32px;
-          border-radius: 8px;
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
           border: none;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .view-btn {
@@ -690,6 +696,9 @@ const AdminView = ({ onNavigate }: { onNavigate?: (tab: string) => void }) => {
           padding: 2rem;
           border-radius: 24px;
           position: relative;
+          background: var(--bg-color);
+          border: 1px solid var(--border-color);
+          box-shadow: var(--card-shadow);
         }
 
         .modal-close {
@@ -724,6 +733,7 @@ const AdminView = ({ onNavigate }: { onNavigate?: (tab: string) => void }) => {
           justify-content: center;
           font-weight: 700;
           font-size: 1.5rem;
+          color: white;
         }
 
         .modal-header h2 {
@@ -774,7 +784,7 @@ const AdminView = ({ onNavigate }: { onNavigate?: (tab: string) => void }) => {
           justify-content: space-between;
           align-items: center;
           padding: 0.75rem;
-          background: rgba(255, 255, 255, 0.03);
+          background: var(--card-bg-elevated);
           border-radius: 12px;
           margin-bottom: 0.5rem;
         }
@@ -832,8 +842,9 @@ const AdminView = ({ onNavigate }: { onNavigate?: (tab: string) => void }) => {
         }
 
         .btn-secondary {
-          background: rgba(255, 255, 255, 0.05);
+          background: var(--btn-secondary-bg);
           border: 1px solid var(--border-color);
+          color: var(--text-primary);
         }
 
         .btn-danger {
@@ -879,18 +890,18 @@ const AdminView = ({ onNavigate }: { onNavigate?: (tab: string) => void }) => {
 
           .table-row {
             grid-template-columns: 1fr;
-            gap: 1rem;
-            padding: 1.25rem;
+            gap: 1.25rem;
+            padding: 1.5rem;
             border: 1px solid var(--border-color);
-            border-radius: 16px;
-            margin-bottom: 1rem;
-            background: rgba(255, 255, 255, 0.02);
+            border-radius: 20px;
+            margin-bottom: 1.25rem;
+            background: var(--card-bg-elevated);
           }
 
           .mobile-stats-row {
             display: flex;
             justify-content: space-between;
-            padding: 0.75rem 0;
+            padding: 1rem 0;
             border-top: 1px solid var(--border-color);
             border-bottom: 1px solid var(--border-color);
           }
@@ -898,23 +909,26 @@ const AdminView = ({ onNavigate }: { onNavigate?: (tab: string) => void }) => {
           .mobile-stat {
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 4px;
           }
 
           .mobile-stat .stat-label {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: var(--text-secondary);
             text-transform: uppercase;
+            letter-spacing: 0.5px;
           }
 
           .actions-cell {
             width: 100%;
-            gap: 0.75rem;
+            gap: 1rem;
+            margin-top: 0.25rem;
+            justify-content: center;
           }
 
           .action-btn {
             flex: 1;
-            height: 40px;
+            height: 44px;
             width: auto;
             gap: 8px;
             font-size: 0.9rem;
@@ -928,7 +942,7 @@ const AdminView = ({ onNavigate }: { onNavigate?: (tab: string) => void }) => {
 
           .modal-stats {
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 1rem;
           }
         }
       `}</style>

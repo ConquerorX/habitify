@@ -11,7 +11,7 @@ const colors = [
 ] as const;
 
 const SettingsView = () => {
-  const { primaryColor, setPrimaryColor } = useTheme();
+  const { primaryColor, setPrimaryColor, themeMode, setThemeMode } = useTheme();
 
   return (
     <div className="view-container">
@@ -47,11 +47,25 @@ const SettingsView = () => {
             <h3>Görünüm Modu</h3>
           </div>
           <div className="mode-options">
-            <button className="mode-btn glass active"><Sun size={18} /> Açık</button>
-            <button className="mode-btn glass"><Moon size={18} /> Koyu</button>
-            <button className="mode-btn glass"><Monitor size={18} /> Otomatik</button>
+            <button
+              className={`mode-btn glass ${themeMode === 'light' ? 'active' : ''}`}
+              onClick={() => setThemeMode('light')}
+            >
+              <Sun size={18} /> Açık
+            </button>
+            <button
+              className={`mode-btn glass ${themeMode === 'dark' ? 'active' : ''}`}
+              onClick={() => setThemeMode('dark')}
+            >
+              <Moon size={18} /> Koyu
+            </button>
+            <button
+              className={`mode-btn glass ${themeMode === 'system' ? 'active' : ''}`}
+              onClick={() => setThemeMode('system')}
+            >
+              <Monitor size={18} /> Otomatik
+            </button>
           </div>
-          <p className="hint">Şu anda sadece koyu mod desteklenmektedir.</p>
         </section>
       </div>
 
@@ -120,29 +134,43 @@ const SettingsView = () => {
 
         .mode-btn {
           flex: 1;
-          padding: 1rem 0.5rem;
+          padding: 1.25rem 0.5rem;
           display: flex;
           flex-direction: column;
           align-items: center;
           gap: 0.5rem;
-          border-radius: 14px;
-          cursor: not-allowed;
-          opacity: 0.4;
-          font-size: 0.75rem;
+          border-radius: 16px;
+          cursor: pointer;
+          background: var(--btn-secondary-bg);
+          border: 1px solid var(--border-color);
+          color: var(--text-primary);
+          opacity: 0.6;
+          font-size: 0.8rem;
           font-weight: 500;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .mode-btn:hover {
+          opacity: 0.9;
+          transform: translateY(-2px);
+          border-color: rgba(var(--accent-primary-rgb), 0.3);
         }
 
         .mode-btn.active {
           border-color: var(--accent-primary);
+          border-width: 2px;
           color: var(--accent-primary);
           opacity: 1;
+          background: rgba(var(--accent-primary-rgb), 0.1);
+          box-shadow: 0 4px 12px rgba(var(--accent-primary-rgb), 0.1);
         }
 
         .hint {
-          margin-top: 1rem;
+          margin-top: 1.5rem;
           font-size: 0.75rem;
           color: var(--text-secondary);
           text-align: center;
+          opacity: 0.8;
         }
 
         @media (max-width: 768px) {
