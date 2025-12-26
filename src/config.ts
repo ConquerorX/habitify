@@ -7,3 +7,5 @@ export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ||
 
 export const AUTH_API_URL = `${API_BASE_URL}/auth`;
 export const HABITS_API_URL = `${API_BASE_URL}/habits`;
+export const ADMIN_API_URL = `${API_BASE_URL}/admin`;
+

@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Home, List, PieChart, Settings, Plus, LogOut, User as UserIcon } from 'lucide-react';
+import { Home, List, PieChart, Settings, Plus, LogOut, User as UserIcon, Shield, X } from 'lucide-react';
 import HabitForm from './HabitForm';
 import { useAuth } from '../context/AuthContext';
 
-export type TabType = 'dashboard' | 'habits' | 'stats' | 'settings';
+export type TabType = 'dashboard' | 'habits' | 'stats' | 'settings' | 'admin';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -13,12 +13,23 @@ interface LayoutProps {
 
 const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout, impersonation, stopImpersonation } = useAuth();
 
   return (
     <div className="layout">
+      {/* Impersonation Banner */}
+      {impersonation.isImpersonating && (
+        <div className="impersonation-banner">
+          <span>👁️ {user?.name || user?.email} olarak görüntülüyorsunuz</span>
+          <button onClick={stopImpersonation}>
+            <X size={16} />
+            Çıkış
+          </button>
+        </div>
+      )}
+
       {/* Mobile Top Header */}
-      <header className="mobile-header glass">
+      <header className={`mobile-header glass ${impersonation.isImpersonating ? 'with-banner' : ''}`}>
         <h2 className="title-gradient">Habitify</h2>
         <div className="mobile-header-actions">
           <button className="mobile-add-btn" onClick={() => setIsFormOpen(true)}>
@@ -60,6 +71,14 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
             active={activeTab === 'settings'}
             onClick={() => setActiveTab('settings')}
           />
+          {user?.isAdmin && !impersonation.isImpersonating && (
+            <NavItem
+              icon={<Shield size={20} />}
+              label="Admin"
+              active={activeTab === 'admin'}
+              onClick={() => setActiveTab('admin')}
+            />
+          )}
         </div>
         <button className="btn btn-primary add-habit-btn" onClick={() => setIsFormOpen(true)}>
           <Plus size={20} />
@@ -114,6 +133,41 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
           display: flex;
           min-height: 100vh;
           background-color: var(--bg-color);
+          flex-direction: column;
+        }
+
+        .impersonation-banner {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 44px;
+          background: linear-gradient(90deg, #6366f1, #8b5cf6);
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 1rem;
+          z-index: 1000;
+          font-size: 0.9rem;
+          font-weight: 500;
+        }
+
+        .impersonation-banner button {
+          background: rgba(255, 255, 255, 0.2);
+          border: none;
+          color: white;
+          padding: 4px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 0.8rem;
+        }
+
+        .impersonation-banner button:hover {
+          background: rgba(255, 255, 255, 0.3);
         }
         
         .mobile-header {
@@ -165,6 +219,19 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
           flex-direction: column;
           gap: 2rem;
           z-index: 100;
+        }
+
+        .layout:has(.impersonation-banner) .sidebar {
+          top: 44px;
+          height: calc(100vh - 44px);
+        }
+
+        .layout:has(.impersonation-banner) .content {
+          padding-top: calc(2.5rem + 44px);
+        }
+
+        .mobile-header.with-banner {
+          top: 44px;
         }
 
         .bottom-nav {

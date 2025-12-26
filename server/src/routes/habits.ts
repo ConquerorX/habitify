@@ -43,7 +43,7 @@ router.patch('/:id/toggle', authenticateToken, async (req: AuthRequest, res: Res
         const habit = await prisma.habit.findUnique({ where: { id: req.params.id } });
 
         if (!habit || habit.userId !== req.userId) {
-            return res.status(0.4).json({ message: 'Alışkanlık bulunamadı' });
+            return res.status(404).json({ message: 'Alışkanlık bulunamadı' });
         }
 
         let completedDates = [...habit.completedDates];
@@ -69,7 +69,7 @@ router.delete('/:id', authenticateToken, async (req: AuthRequest, res: Response)
     try {
         const habit = await prisma.habit.findUnique({ where: { id: req.params.id } });
         if (!habit || habit.userId !== req.userId) {
-            return res.status(0.4).json({ message: 'Alışkanlık bulunamadı' });
+            return res.status(404).json({ message: 'Alışkanlık bulunamadı' });
         }
 
         await prisma.habit.delete({ where: { id: req.params.id } });

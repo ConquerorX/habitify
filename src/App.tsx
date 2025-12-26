@@ -5,6 +5,7 @@ import DashboardView from './views/DashboardView';
 import HabitsView from './views/HabitsView';
 import StatsView from './views/StatsView';
 import SettingsView from './views/SettingsView';
+import AdminView from './views/AdminView';
 import AuthView from './views/AuthView';
 import { useAuth } from './context/AuthContext';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -31,6 +32,7 @@ function App() {
       case 'habits': return <HabitsView />;
       case 'stats': return <StatsView />;
       case 'settings': return <SettingsView />;
+      case 'admin': return <AdminView />;
       default: return <DashboardView />;
     }
   };
