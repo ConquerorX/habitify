@@ -156,9 +156,11 @@ const StatsView = () => {
 
         @media (max-width: 768px) { 
           .stats-grid { grid-template-columns: 1fr; gap: 1rem; } 
-          .summary-stats { flex-direction: row; flex-wrap: wrap; gap: 1.5rem; }
-          .summary-item { flex: 1; min-width: 100px; }
+          .summary-stats { flex-direction: column; gap: 1.5rem; }
+          .summary-item { width: 100%; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; }
+          .summary-item:last-child { border-bottom: none; }
           .summary-value { font-size: 1.5rem; }
+          .chart-wrapper { height: 200px; }
         }
       `}</style>
         </div>

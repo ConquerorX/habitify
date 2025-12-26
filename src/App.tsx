@@ -32,7 +32,7 @@ function App() {
       case 'habits': return <HabitsView />;
       case 'stats': return <StatsView />;
       case 'settings': return <SettingsView />;
-      case 'admin': return <AdminView />;
+      case 'admin': return <AdminView onNavigate={(tab) => setActiveTab(tab as TabType)} />;
       default: return <DashboardView />;
     }
   };

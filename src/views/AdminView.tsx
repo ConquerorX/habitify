@@ -3,415 +3,430 @@ import { useAuth } from '../context/AuthContext';
 import { ADMIN_API_URL } from '../config';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    Users,
-    Activity,
-    CheckCircle2,
-    Trash2,
-    Eye,
-    X,
-    AlertTriangle,
-    Calendar,
-    Flame,
-    Target
+  Users,
+  Activity,
+  CheckCircle2,
+  Trash2,
+  Eye,
+  X,
+  AlertTriangle,
+  Calendar,
+  Flame,
+  Target
 } from 'lucide-react';
 
 interface UserData {
-    id: string;
-    email: string;
-    name: string | null;
-    isAdmin: boolean;
-    createdAt: string;
-    habitCount: number;
+  id: string;
+  email: string;
+  name: string | null;
+  isAdmin: boolean;
+  createdAt: string;
+  habitCount: number;
 }
 
 interface UserDetail {
+  id: string;
+  email: string;
+  name: string | null;
+  isAdmin: boolean;
+  createdAt: string;
+  habits: Array<{
     id: string;
-    email: string;
-    name: string | null;
-    isAdmin: boolean;
+    title: string;
+    category: string;
+    frequency: string;
+    completedDates: string[];
     createdAt: string;
-    habits: Array<{
-        id: string;
-        title: string;
-        category: string;
-        frequency: string;
-        completedDates: string[];
-        createdAt: string;
-    }>;
+  }>;
 }
 
 interface Stats {
-    totalUsers: number;
-    totalHabits: number;
-    completedToday: number;
-    activeUsers: number;
+  totalUsers: number;
+  totalHabits: number;
+  completedToday: number;
+  activeUsers: number;
 }
 
-const AdminView = () => {
-    const { token, startImpersonation } = useAuth();
-    const [users, setUsers] = useState<UserData[]>([]);
-    const [stats, setStats] = useState<Stats | null>(null);
-    const [selectedUser, setSelectedUser] = useState<UserDetail | null>(null);
-    const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+const AdminView = ({ onNavigate }: { onNavigate?: (tab: string) => void }) => {
+  const { token, startImpersonation } = useAuth();
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserDetail | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        fetchData();
-    }, [token]);
+  useEffect(() => {
+    fetchData();
+  }, [token]);
 
-    const fetchData = async () => {
-        if (!token) return;
-        setLoading(true);
-        setError(null);
+  const fetchData = async () => {
+    if (!token) return;
+    setLoading(true);
+    setError(null);
 
-        try {
-            const [usersRes, statsRes] = await Promise.all([
-                fetch(`${ADMIN_API_URL}/users`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                }),
-                fetch(`${ADMIN_API_URL}/stats`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                })
-            ]);
+    try {
+      const [usersRes, statsRes] = await Promise.all([
+        fetch(`${ADMIN_API_URL}/users`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch(`${ADMIN_API_URL}/stats`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+      ]);
 
-            if (!usersRes.ok || !statsRes.ok) {
-                throw new Error('Admin verilerine erişilemedi');
-            }
+      if (!usersRes.ok || !statsRes.ok) {
+        throw new Error('Admin verilerine erişilemedi');
+      }
 
-            const [usersData, statsData] = await Promise.all([
-                usersRes.json(),
-                statsRes.json()
-            ]);
+      const [usersData, statsData] = await Promise.all([
+        usersRes.json(),
+        statsRes.json()
+      ]);
 
-            setUsers(usersData);
-            setStats(statsData);
-        } catch (err: any) {
-            setError(err.message || 'Bir hata oluştu');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchUserDetail = async (userId: string) => {
-        if (!token) return;
-
-        try {
-            const res = await fetch(`${ADMIN_API_URL}/users/${userId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (!res.ok) throw new Error('Kullanıcı detayları alınamadı');
-
-            const data = await res.json();
-            setSelectedUser(data);
-        } catch (err: any) {
-            setError(err.message);
-        }
-    };
-
-    const handleImpersonate = async (userId: string) => {
-        if (!token) return;
-
-        try {
-            const res = await fetch(`${ADMIN_API_URL}/users/${userId}/impersonate`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (!res.ok) throw new Error('Görüntüleme başlatılamadı');
-
-            const { token: impToken, user } = await res.json();
-            startImpersonation(impToken, user);
-            setSelectedUser(null);
-        } catch (err: any) {
-            setError(err.message);
-        }
-    };
-
-    const handleDelete = async (userId: string) => {
-        if (!token) return;
-
-        try {
-            const res = await fetch(`${ADMIN_API_URL}/users/${userId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (!res.ok) throw new Error('Kullanıcı silinemedi');
-
-            setDeleteConfirm(null);
-            fetchData();
-        } catch (err: any) {
-            setError(err.message);
-        }
-    };
-
-    if (loading) {
-        return (
-            <div className="admin-loading">
-                <div className="spinner"></div>
-                <p>Yükleniyor...</p>
-            </div>
-        );
+      setUsers(usersData);
+      setStats(statsData);
+    } catch (err: any) {
+      setError(err.message || 'Bir hata oluştu');
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (error) {
-        return (
-            <div className="admin-error glass">
-                <AlertTriangle size={48} />
-                <h3>Hata</h3>
-                <p>{error}</p>
-                <button className="btn btn-primary" onClick={fetchData}>Tekrar Dene</button>
-            </div>
-        );
+  const fetchUserDetail = async (userId: string) => {
+    if (!token) return;
+
+    try {
+      const res = await fetch(`${ADMIN_API_URL}/users/${userId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!res.ok) throw new Error('Kullanıcı detayları alınamadı');
+
+      const data = await res.json();
+      setSelectedUser(data);
+    } catch (err: any) {
+      setError(err.message);
     }
+  };
 
+  const handleImpersonate = async (userId: string) => {
+    if (!token) return;
+
+    try {
+      const res = await fetch(`${ADMIN_API_URL}/users/${userId}/impersonate`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!res.ok) throw new Error('Görüntüleme başlatılamadı');
+
+      const { token: impToken, user } = await res.json();
+      startImpersonation(impToken, user);
+      setSelectedUser(null);
+      // Navigate to dashboard after impersonation
+      if (onNavigate) onNavigate('dashboard');
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  const handleDelete = async (userId: string) => {
+    if (!token) return;
+
+    try {
+      const res = await fetch(`${ADMIN_API_URL}/users/${userId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!res.ok) throw new Error('Kullanıcı silinemedi');
+
+      setDeleteConfirm(null);
+      fetchData();
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  if (loading) {
     return (
-        <div className="admin-container">
-            <header className="admin-header">
-                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-                    <h1>Admin Paneli</h1>
-                    <p>Kullanıcıları ve istatistikleri yönetin</p>
-                </motion.div>
-            </header>
+      <div className="admin-loading">
+        <div className="spinner"></div>
+        <p>Yükleniyor...</p>
+      </div>
+    );
+  }
 
-            {/* Stats Cards */}
-            {stats && (
-                <section className="stats-grid">
-                    <motion.div
-                        className="stat-card glass"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                    >
-                        <div className="stat-icon users-icon">
-                            <Users size={24} />
-                        </div>
-                        <div className="stat-info">
-                            <span className="stat-value">{stats.totalUsers}</span>
-                            <span className="stat-label">Toplam Kullanıcı</span>
-                        </div>
-                    </motion.div>
+  if (error) {
+    return (
+      <div className="admin-error glass">
+        <AlertTriangle size={48} />
+        <h3>Hata</h3>
+        <p>{error}</p>
+        <button className="btn btn-primary" onClick={fetchData}>Tekrar Dene</button>
+      </div>
+    );
+  }
 
-                    <motion.div
-                        className="stat-card glass"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                    >
-                        <div className="stat-icon habits-icon">
-                            <Target size={24} />
-                        </div>
-                        <div className="stat-info">
-                            <span className="stat-value">{stats.totalHabits}</span>
-                            <span className="stat-label">Toplam Alışkanlık</span>
-                        </div>
-                    </motion.div>
+  return (
+    <div className="admin-container">
+      <header className="admin-header">
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+          <h1>Admin Paneli</h1>
+          <p>Kullanıcıları ve istatistikleri yönetin</p>
+        </motion.div>
+      </header>
 
-                    <motion.div
-                        className="stat-card glass"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                    >
-                        <div className="stat-icon completed-icon">
-                            <CheckCircle2 size={24} />
-                        </div>
-                        <div className="stat-info">
-                            <span className="stat-value">{stats.completedToday}</span>
-                            <span className="stat-label">Bugün Tamamlanan</span>
-                        </div>
-                    </motion.div>
+      {/* Stats Cards */}
+      {stats && (
+        <section className="stats-grid">
+          <motion.div
+            className="stat-card glass"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <div className="stat-icon users-icon">
+              <Users size={24} />
+            </div>
+            <div className="stat-info">
+              <span className="stat-value">{stats.totalUsers}</span>
+              <span className="stat-label">Toplam Kullanıcı</span>
+            </div>
+          </motion.div>
 
-                    <motion.div
-                        className="stat-card glass"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
-                    >
-                        <div className="stat-icon active-icon">
-                            <Activity size={24} />
-                        </div>
-                        <div className="stat-info">
-                            <span className="stat-value">{stats.activeUsers}</span>
-                            <span className="stat-label">Aktif Kullanıcı</span>
-                        </div>
-                    </motion.div>
-                </section>
-            )}
+          <motion.div
+            className="stat-card glass"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="stat-icon habits-icon">
+              <Target size={24} />
+            </div>
+            <div className="stat-info">
+              <span className="stat-value">{stats.totalHabits}</span>
+              <span className="stat-label">Toplam Alışkanlık</span>
+            </div>
+          </motion.div>
 
-            {/* Users Table */}
-            <section className="users-section glass">
-                <div className="section-header">
-                    <h3>Kullanıcılar</h3>
-                    <span className="badge">{users.length} kullanıcı</span>
+          <motion.div
+            className="stat-card glass"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <div className="stat-icon completed-icon">
+              <CheckCircle2 size={24} />
+            </div>
+            <div className="stat-info">
+              <span className="stat-value">{stats.completedToday}</span>
+              <span className="stat-label">Bugün Tamamlanan</span>
+            </div>
+          </motion.div>
+
+          <motion.div
+            className="stat-card glass"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <div className="stat-icon active-icon">
+              <Activity size={24} />
+            </div>
+            <div className="stat-info">
+              <span className="stat-value">{stats.activeUsers}</span>
+              <span className="stat-label">Aktif Kullanıcı</span>
+            </div>
+          </motion.div>
+        </section>
+      )}
+
+      <section className="users-section glass">
+        <div className="section-header">
+          <h3>Kullanıcılar</h3>
+          <span className="badge">{users.length} kullanıcı</span>
+        </div>
+
+        <div className="users-table-container">
+          <div className="table-header desktop-only">
+            <span>Kullanıcı</span>
+            <span>Alışkanlık</span>
+            <span>Kayıt Tarihi</span>
+            <span>İşlemler</span>
+          </div>
+
+          <div className="table-body">
+            {users.map((user, index) => (
+              <motion.div
+                key={user.id}
+                className="table-row"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <div className="user-cell">
+                  <div className="user-avatar-small">
+                    {(user.name || user.email)[0].toUpperCase()}
+                  </div>
+                  <div className="user-details">
+                    <span className="user-name">{user.name || 'İsimsiz'}</span>
+                    <span className="user-email">{user.email}</span>
+                    {user.isAdmin && <span className="admin-badge">Admin</span>}
+                  </div>
                 </div>
 
-                <div className="users-table">
-                    <div className="table-header">
-                        <span>Kullanıcı</span>
-                        <span>Alışkanlık</span>
-                        <span>Kayıt Tarihi</span>
-                        <span>İşlemler</span>
-                    </div>
-
-                    <div className="table-body">
-                        {users.map((user, index) => (
-                            <motion.div
-                                key={user.id}
-                                className="table-row"
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.05 }}
-                            >
-                                <div className="user-cell">
-                                    <div className="user-avatar-small">
-                                        {(user.name || user.email)[0].toUpperCase()}
-                                    </div>
-                                    <div className="user-details">
-                                        <span className="user-name">{user.name || 'İsimsiz'}</span>
-                                        <span className="user-email">{user.email}</span>
-                                        {user.isAdmin && <span className="admin-badge">Admin</span>}
-                                    </div>
-                                </div>
-                                <div className="habit-cell">
-                                    <span className="habit-count">{user.habitCount}</span>
-                                </div>
-                                <div className="date-cell">
-                                    {new Date(user.createdAt).toLocaleDateString('tr-TR')}
-                                </div>
-                                <div className="actions-cell">
-                                    <button
-                                        className="action-btn view-btn"
-                                        onClick={() => fetchUserDetail(user.id)}
-                                        title="Detayları Gör"
-                                    >
-                                        <Eye size={16} />
-                                    </button>
-                                    <button
-                                        className="action-btn delete-btn"
-                                        onClick={() => setDeleteConfirm(user.id)}
-                                        title="Sil"
-                                        disabled={user.isAdmin}
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
+                <div className="mobile-stats-row mobile-only">
+                  <div className="mobile-stat">
+                    <span className="stat-label">Alışkanlık</span>
+                    <span className="habit-count">{user.habitCount}</span>
+                  </div>
+                  <div className="mobile-stat">
+                    <span className="stat-label">Kayıt</span>
+                    <span className="date-cell-mobile">{new Date(user.createdAt).toLocaleDateString('tr-TR')}</span>
+                  </div>
                 </div>
-            </section>
 
-            {/* User Detail Modal */}
-            <AnimatePresence>
-                {selectedUser && (
-                    <motion.div
-                        className="modal-overlay"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setSelectedUser(null)}
-                    >
-                        <motion.div
-                            className="modal-content glass"
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <button className="modal-close" onClick={() => setSelectedUser(null)}>
-                                <X size={24} />
-                            </button>
+                <div className="habit-cell desktop-only">
+                  <span className="habit-count">{user.habitCount}</span>
+                </div>
+                <div className="date-cell desktop-only">
+                  {new Date(user.createdAt).toLocaleDateString('tr-TR')}
+                </div>
+                <div className="actions-cell">
+                  <button
+                    className="action-btn view-btn"
+                    onClick={() => fetchUserDetail(user.id)}
+                    title="Detayları Gör"
+                  >
+                    <Eye size={16} />
+                    <span className="mobile-only">Detay</span>
+                  </button>
+                  <button
+                    className="action-btn delete-btn"
+                    onClick={() => setDeleteConfirm(user.id)}
+                    title="Sil"
+                    disabled={user.isAdmin}
+                  >
+                    <Trash2 size={16} />
+                    <span className="mobile-only">Sil</span>
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-                            <div className="modal-header">
-                                <div className="modal-avatar">
-                                    {(selectedUser.name || selectedUser.email)[0].toUpperCase()}
-                                </div>
-                                <div>
-                                    <h2>{selectedUser.name || 'İsimsiz Kullanıcı'}</h2>
-                                    <p>{selectedUser.email}</p>
-                                </div>
-                            </div>
+      {/* User Detail Modal */}
+      <AnimatePresence>
+        {selectedUser && (
+          <motion.div
+            className="modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedUser(null)}
+          >
+            <motion.div
+              className="modal-content glass"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button className="modal-close" onClick={() => setSelectedUser(null)}>
+                <X size={24} />
+              </button>
 
-                            <div className="modal-stats">
-                                <div className="modal-stat">
-                                    <Calendar size={16} />
-                                    <span>Kayıt: {new Date(selectedUser.createdAt).toLocaleDateString('tr-TR')}</span>
-                                </div>
-                                <div className="modal-stat">
-                                    <Target size={16} />
-                                    <span>{selectedUser.habits.length} alışkanlık</span>
-                                </div>
-                            </div>
+              <div className="modal-header">
+                <div className="modal-avatar">
+                  {(selectedUser.name || selectedUser.email)[0].toUpperCase()}
+                </div>
+                <div>
+                  <h2>{selectedUser.name || 'İsimsiz Kullanıcı'}</h2>
+                  <p>{selectedUser.email}</p>
+                </div>
+              </div>
 
-                            <button
-                                className="btn btn-primary impersonate-btn"
-                                onClick={() => handleImpersonate(selectedUser.id)}
-                            >
-                                <Eye size={18} />
-                                Kullanıcıyı Gör
-                            </button>
+              <div className="modal-stats">
+                <div className="modal-stat">
+                  <Calendar size={16} />
+                  <span>Kayıt: {new Date(selectedUser.createdAt).toLocaleDateString('tr-TR')}</span>
+                </div>
+                <div className="modal-stat">
+                  <Target size={16} />
+                  <span>{selectedUser.habits.length} alışkanlık</span>
+                </div>
+              </div>
 
-                            {selectedUser.habits.length > 0 && (
-                                <div className="habits-list">
-                                    <h4>Alışkanlıklar</h4>
-                                    {selectedUser.habits.map(habit => (
-                                        <div key={habit.id} className="habit-item">
-                                            <div className="habit-info">
-                                                <span className="habit-title">{habit.title}</span>
-                                                <span className="habit-category">{habit.category}</span>
-                                            </div>
-                                            <div className="habit-meta">
-                                                <Flame size={14} />
-                                                <span>{habit.completedDates.length} gün</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+              <button
+                className="btn btn-primary impersonate-btn"
+                onClick={() => handleImpersonate(selectedUser.id)}
+              >
+                <Eye size={18} />
+                Kullanıcıyı Gör
+              </button>
 
-            {/* Delete Confirmation Modal */}
-            <AnimatePresence>
-                {deleteConfirm && (
-                    <motion.div
-                        className="modal-overlay"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setDeleteConfirm(null)}
-                    >
-                        <motion.div
-                            className="modal-content glass delete-modal"
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <div className="delete-icon">
-                                <AlertTriangle size={48} />
-                            </div>
-                            <h3>Kullanıcıyı Sil</h3>
-                            <p>Bu kullanıcı ve tüm alışkanlıkları kalıcı olarak silinecek. Bu işlem geri alınamaz.</p>
-                            <div className="delete-actions">
-                                <button className="btn btn-secondary" onClick={() => setDeleteConfirm(null)}>
-                                    İptal
-                                </button>
-                                <button className="btn btn-danger" onClick={() => handleDelete(deleteConfirm)}>
-                                    Sil
-                                </button>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+              {selectedUser.habits.length > 0 && (
+                <div className="habits-list">
+                  <h4>Alışkanlıklar</h4>
+                  {selectedUser.habits.map(habit => (
+                    <div key={habit.id} className="habit-item">
+                      <div className="habit-info">
+                        <span className="habit-title">{habit.title}</span>
+                        <span className="habit-category">{habit.category}</span>
+                      </div>
+                      <div className="habit-meta">
+                        <Flame size={14} />
+                        <span>{habit.completedDates.length} gün</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-            <style>{`
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deleteConfirm && (
+          <motion.div
+            className="modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setDeleteConfirm(null)}
+          >
+            <motion.div
+              className="modal-content glass delete-modal"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="delete-icon">
+                <AlertTriangle size={48} />
+              </div>
+              <h3>Kullanıcıyı Sil</h3>
+              <p>Bu kullanıcı ve tüm alışkanlıkları kalıcı olarak silinecek. Bu işlem geri alınamaz.</p>
+              <div className="delete-actions">
+                <button className="btn btn-secondary" onClick={() => setDeleteConfirm(null)}>
+                  İptal
+                </button>
+                <button className="btn btn-danger" onClick={() => handleDelete(deleteConfirm)}>
+                  Sil
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <style>{`
         .admin-container {
           max-width: 1200px;
           margin: 0 auto;
@@ -830,22 +845,95 @@ const AdminView = () => {
           background: #dc2626;
         }
 
+        .desktop-only { display: block; }
+        .mobile-only { display: none; }
+
         @media (max-width: 768px) {
-          .table-header, .table-row {
-            grid-template-columns: 1fr auto auto;
-          }
-          
-          .date-cell {
-            display: none;
-          }
-          
+          .desktop-only { display: none; }
+          .mobile-only { display: block; }
+
           .stats-grid {
             grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+          }
+
+          .stat-card {
+            padding: 1rem;
+            flex-direction: column;
+            text-align: center;
+            gap: 0.5rem;
+          }
+
+          .stat-icon {
+            width: 40px;
+            height: 40px;
+          }
+
+          .stat-value {
+            font-size: 1.4rem;
+          }
+
+          .table-header {
+            display: none;
+          }
+
+          .table-row {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            padding: 1.25rem;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            margin-bottom: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+          }
+
+          .mobile-stats-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+          }
+
+          .mobile-stat {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+          }
+
+          .mobile-stat .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+          }
+
+          .actions-cell {
+            width: 100%;
+            gap: 0.75rem;
+          }
+
+          .action-btn {
+            flex: 1;
+            height: 40px;
+            width: auto;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+          }
+
+          .modal-content {
+            padding: 1.5rem;
+            border-radius: 20px;
+          }
+
+          .modal-stats {
+            flex-direction: column;
+            gap: 0.75rem;
           }
         }
       `}</style>
-        </div>
-    );
+    </div>
+  );
 };
 
 export default AdminView;

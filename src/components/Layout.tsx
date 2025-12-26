@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Home, List, PieChart, Settings, Plus, LogOut, User as UserIcon, Shield, X } from 'lucide-react';
+import { Home, List, PieChart, Settings, Plus, LogOut, User as UserIcon, Shield, X, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import HabitForm from './HabitForm';
 import { useAuth } from '../context/AuthContext';
 
@@ -13,18 +13,27 @@ interface LayoutProps {
 
 const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const { user, logout, impersonation, stopImpersonation } = useAuth();
 
   return (
-    <div className="layout">
+    <div className={`layout ${isCollapsed ? 'sidebar-collapsed' : ''}`}>
       {/* Impersonation Banner */}
       {impersonation.isImpersonating && (
         <div className="impersonation-banner">
-          <span>👁️ {user?.name || user?.email} olarak görüntülüyorsunuz</span>
-          <button onClick={stopImpersonation}>
-            <X size={16} />
-            Çıkış
-          </button>
+          <div className="banner-content">
+            <div className="banner-user">
+              <Eye size={16} className="banner-icon" />
+              <span className="banner-text">
+                <strong>{user?.name || 'İsimsiz'}</strong>
+                <span className="banner-email">{user?.email}</span>
+              </span>
+            </div>
+            <button className="banner-exit-btn" onClick={stopImpersonation} title="Çıkış Yap">
+              <X size={18} />
+              <span>Çıkış</span>
+            </button>
+          </div>
         </div>
       )}
 
@@ -42,34 +51,44 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
       </header>
 
       {/* Desktop Sidebar */}
-      <nav className="sidebar glass">
-        <div className="logo">
-          <h2 className="title-gradient">Habitify</h2>
+      <nav className={`sidebar glass ${isCollapsed ? 'collapsed' : ''}`}>
+        <div className="sidebar-top">
+          <div className="logo">
+            <h2 className="title-gradient">{isCollapsed ? 'H' : 'Habitify'}</h2>
+          </div>
+          <button className="collapse-btn" onClick={() => setIsCollapsed(!isCollapsed)} title={isCollapsed ? 'Genişlet' : 'Daralt'}>
+            {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          </button>
         </div>
+
         <div className="nav-items">
           <NavItem
             icon={<Home size={20} />}
             label="Dashboard"
             active={activeTab === 'dashboard'}
             onClick={() => setActiveTab('dashboard')}
+            collapsed={isCollapsed}
           />
           <NavItem
             icon={<List size={20} />}
             label="Alışkanlıklar"
             active={activeTab === 'habits'}
             onClick={() => setActiveTab('habits')}
+            collapsed={isCollapsed}
           />
           <NavItem
             icon={<PieChart size={20} />}
             label="İstatistikler"
             active={activeTab === 'stats'}
             onClick={() => setActiveTab('stats')}
+            collapsed={isCollapsed}
           />
           <NavItem
             icon={<Settings size={20} />}
             label="Ayarlar"
             active={activeTab === 'settings'}
             onClick={() => setActiveTab('settings')}
+            collapsed={isCollapsed}
           />
           {user?.isAdmin && !impersonation.isImpersonating && (
             <NavItem
@@ -77,12 +96,14 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
               label="Admin"
               active={activeTab === 'admin'}
               onClick={() => setActiveTab('admin')}
+              collapsed={isCollapsed}
             />
           )}
         </div>
+
         <button className="btn btn-primary add-habit-btn" onClick={() => setIsFormOpen(true)}>
           <Plus size={20} />
-          <span>Yeni Alışkanlık</span>
+          {!isCollapsed && <span>Yeni Alışkanlık</span>}
         </button>
 
         <div className="sidebar-footer">
@@ -90,14 +111,16 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
             <div className="user-avatar">
               <UserIcon size={18} />
             </div>
-            <div className="user-info">
-              <span className="user-name">{user?.name || 'Kullanıcı'}</span>
-              <span className="user-email">{user?.email}</span>
-            </div>
+            {!isCollapsed && (
+              <div className="user-info">
+                <span className="user-name">{user?.name || 'Kullanıcı'}</span>
+                <span className="user-email">{user?.email}</span>
+              </div>
+            )}
           </div>
-          <button className="logout-btn" onClick={logout}>
+          <button className="logout-btn" onClick={logout} title="Çıkış Yap">
             <LogOut size={18} />
-            <span>Çıkış Yap</span>
+            {!isCollapsed && <span>Çıkış Yap</span>}
           </button>
         </div>
       </nav>
@@ -120,6 +143,12 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
           <Settings size={24} />
           <span>Ayarlar</span>
         </div>
+        {user?.isAdmin && !impersonation.isImpersonating && (
+          <div className={`bottom-nav-item ${activeTab === 'admin' ? 'active' : ''}`} onClick={() => setActiveTab('admin')}>
+            <Shield size={24} />
+            <span>Admin</span>
+          </div>
+        )}
       </nav>
 
       <main className="content">
@@ -134,6 +163,11 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
           min-height: 100vh;
           background-color: var(--bg-color);
           flex-direction: column;
+          --sidebar-width: 280px;
+        }
+
+        .layout.sidebar-collapsed {
+          --sidebar-width: 80px;
         }
 
         .impersonation-banner {
@@ -141,33 +175,79 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
           top: 0;
           left: 0;
           right: 0;
-          height: 44px;
-          background: linear-gradient(90deg, #6366f1, #8b5cf6);
+          height: 40px;
+          background: rgba(99, 102, 241, 0.85);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
           color: white;
+          z-index: 1000;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
           display: flex;
           align-items: center;
-          justify-content: center;
-          gap: 1rem;
-          z-index: 1000;
-          font-size: 0.9rem;
-          font-weight: 500;
         }
 
-        .impersonation-banner button {
-          background: rgba(255, 255, 255, 0.2);
-          border: none;
+        .banner-content {
+          width: 100%;
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 0 1rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1rem;
+        }
+
+        .banner-user {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          min-width: 0;
+        }
+
+        .banner-icon {
+          color: rgba(255, 255, 255, 0.9);
+          flex-shrink: 0;
+        }
+
+        .banner-text {
+          font-size: 0.85rem;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .banner-email {
+          opacity: 0.7;
+          font-size: 0.75rem;
+          font-weight: 400;
+        }
+
+        .banner-exit-btn {
+          background: rgba(255, 255, 255, 0.15);
+          border: 1px solid rgba(255, 255, 255, 0.2);
           color: white;
-          padding: 4px 12px;
-          border-radius: 6px;
+          padding: 4px 10px;
+          border-radius: 8px;
           cursor: pointer;
           display: flex;
           align-items: center;
-          gap: 4px;
-          font-size: 0.8rem;
+          gap: 6px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          transition: all 0.2s;
+          flex-shrink: 0;
         }
 
-        .impersonation-banner button:hover {
-          background: rgba(255, 255, 255, 0.3);
+        .banner-exit-btn:hover {
+          background: rgba(255, 255, 255, 0.25);
+          transform: translateY(-1px);
+        }
+
+        .banner-exit-btn:active {
+          transform: translateY(0);
         }
         
         .mobile-header {
@@ -209,29 +289,78 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
         }
 
         .sidebar {
-          width: 280px;
+          width: var(--sidebar-width);
           height: 100vh;
           position: fixed;
           left: 0;
           top: 0;
-          padding: 2rem;
+          padding: 1.5rem;
           display: flex;
           flex-direction: column;
-          gap: 2rem;
+          gap: 1.5rem;
           z-index: 100;
+          transition: width 0.3s ease;
+          overflow: hidden;
+        }
+
+        .sidebar.collapsed {
+          padding: 1rem;
+        }
+
+        .sidebar-top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.5rem;
+        }
+
+        .sidebar.collapsed .sidebar-top {
+          justify-content: center;
+        }
+
+        .sidebar.collapsed .logo h2 {
+          font-size: 1.5rem;
+        }
+
+        .collapse-btn {
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid var(--border-color);
+          color: var(--text-secondary);
+          width: 28px;
+          height: 28px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s;
+          flex-shrink: 0;
+        }
+
+        .sidebar.collapsed .collapse-btn {
+          display: none;
+        }
+
+        .collapse-btn:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: var(--text-primary);
+        }
+
+        .sidebar.collapsed:hover .collapse-btn {
+          display: flex;
         }
 
         .layout:has(.impersonation-banner) .sidebar {
-          top: 44px;
-          height: calc(100vh - 44px);
+          top: 40px;
+          height: calc(100vh - 40px);
         }
 
         .layout:has(.impersonation-banner) .content {
-          padding-top: calc(2.5rem + 44px);
+          padding-top: calc(2.5rem + 40px);
         }
 
         .mobile-header.with-banner {
-          top: 44px;
+          top: 40px;
         }
 
         .bottom-nav {
@@ -268,11 +397,12 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
         }
 
         .content {
-          margin-left: 280px;
+          margin-left: var(--sidebar-width);
           flex: 1;
           padding: 2.5rem;
           min-height: 100vh;
           width: 100%;
+          transition: margin-left 0.3s ease;
         }
 
         .nav-items {
@@ -290,6 +420,12 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
           color: var(--text-secondary);
           cursor: pointer;
           transition: all 0.3s ease;
+          white-space: nowrap;
+        }
+
+        .sidebar.collapsed .nav-item {
+          justify-content: center;
+          padding: 0.75rem;
         }
 
         .nav-item:hover {
@@ -304,14 +440,19 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
 
         .add-habit-btn {
           width: 100%;
+          justify-content: center;
+        }
+
+        .sidebar.collapsed .add-habit-btn {
+          padding: 0.75rem;
         }
 
         .sidebar-footer {
           margin-top: auto;
           display: flex;
           flex-direction: column;
-          gap: 1.5rem;
-          padding-top: 2rem;
+          gap: 1rem;
+          padding-top: 1.5rem;
           border-top: 1px solid var(--border-color);
         }
 
@@ -319,6 +460,10 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
           display: flex;
           align-items: center;
           gap: 0.75rem;
+        }
+
+        .sidebar.collapsed .user-profile {
+          justify-content: center;
         }
 
         .user-avatar {
@@ -330,6 +475,7 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
           display: flex;
           align-items: center;
           justify-content: center;
+          flex-shrink: 0;
         }
 
         .user-info {
@@ -355,6 +501,7 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
         .logout-btn {
           display: flex;
           align-items: center;
+          justify-content: center;
           gap: 0.75rem;
           padding: 0.75rem 1rem;
           background: rgba(255, 255, 255, 0.03);
@@ -365,6 +512,10 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
           transition: all 0.2s;
         }
 
+        .sidebar.collapsed .logout-btn {
+          padding: 0.75rem;
+        }
+
         .logout-btn:hover {
           background: rgba(239, 68, 68, 0.1);
           color: #ef4444;
@@ -372,19 +523,46 @@ const Layout = ({ children, activeTab, setActiveTab }: LayoutProps) => {
         }
 
         @media (max-width: 1024px) {
-          .sidebar { width: 240px; }
-          .content { margin-left: 240px; }
+          .layout { --sidebar-width: 240px; }
+          .layout.sidebar-collapsed { --sidebar-width: 70px; }
         }
 
         @media (max-width: 768px) {
           .sidebar { display: none; }
           .mobile-header { display: flex; }
           .bottom-nav { display: flex; }
+          
           .content {
             margin-left: 0;
             padding: 1rem;
             padding-top: 80px;
             padding-bottom: 90px;
+            transition: none;
+          }
+
+          .layout:has(.impersonation-banner) .content {
+            padding-top: calc(80px + 40px);
+          }
+
+          .layout:has(.impersonation-banner) .mobile-header {
+            top: 40px;
+          }
+
+          .banner-email {
+            display: none;
+          }
+
+          .banner-text {
+            font-size: 0.8rem;
+          }
+
+          .banner-exit-btn span {
+            display: none;
+          }
+
+          .banner-exit-btn {
+            padding: 4px;
+            border-radius: 6px;
           }
         }
       `}</style>
@@ -397,12 +575,13 @@ interface NavItemProps {
   label: string;
   active?: boolean;
   onClick: () => void;
+  collapsed?: boolean;
 }
 
-const NavItem = ({ icon, label, active, onClick }: NavItemProps) => (
-  <div className={`nav-item ${active ? 'active' : ''}`} onClick={onClick}>
+const NavItem = ({ icon, label, active, onClick, collapsed }: NavItemProps) => (
+  <div className={`nav-item ${active ? 'active' : ''}`} onClick={onClick} title={collapsed ? label : undefined}>
     {icon}
-    <span className="label">{label}</span>
+    {!collapsed && <span className="label">{label}</span>}
   </div>
 );
 

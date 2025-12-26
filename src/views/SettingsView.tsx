@@ -147,7 +147,8 @@ const SettingsView = () => {
 
         @media (max-width: 768px) {
           .settings-section { padding: 1.25rem; }
-          .color-options { grid-template-columns: repeat(6, 1fr); gap: 0.5rem; }
+          .color-options { grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+          .mode-options { flex-direction: column; }
         }
       `}</style>
     </div>

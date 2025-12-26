@@ -133,12 +133,24 @@ const HabitsView = () => {
         @media (max-width: 768px) {
           .habit-detail-card {
             padding: 1rem;
+            flex-direction: column;
+            align-items: flex-start;
+            position: relative;
+          }
+          .habit-actions {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+          }
+          .habit-header {
+            padding-right: 3rem;
           }
           .habit-header h3 {
             font-size: 1.1rem;
           }
           .habit-meta {
             gap: 0.5rem;
+            margin-top: 0.5rem;
           }
         }
       `}</style>

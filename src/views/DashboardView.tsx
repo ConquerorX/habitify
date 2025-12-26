@@ -286,16 +286,36 @@ const DashboardView = () => {
           .dashboard-header {
             flex-direction: column;
             align-items: flex-start;
+            gap: 1.5rem;
+          }
+          .greeting h1 {
+            font-size: 1.5rem;
           }
           .streak-stats {
             width: 100%;
             justify-content: space-around;
+            padding: 1rem;
           }
           .habits-grid {
             grid-template-columns: 1fr;
           }
           .habit-card {
             padding: 1rem;
+          }
+          .complete-btn {
+            width: 44px;
+            height: 44px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .streak-stats {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+          }
+          .greeting h1 {
+            font-size: 1.25rem;
           }
         }
       `}</style>

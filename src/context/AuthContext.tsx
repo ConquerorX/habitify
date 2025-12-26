@@ -37,12 +37,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     useEffect(() => {
+        const savedToken = localStorage.getItem('token');
         const savedUser = localStorage.getItem('user');
-        if (savedUser && token) {
+        if (savedToken && savedUser) {
+            setToken(savedToken);
             setUser(JSON.parse(savedUser));
         }
         setIsLoading(false);
-    }, [token]);
+    }, []);
 
     const login = (newToken: string, newUser: User) => {
         setToken(newToken);
