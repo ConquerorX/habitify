@@ -10,11 +10,7 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response) => {
         const habits = await prisma.habit.findMany({
             where: { userId: req.userId }
         });
-        const formattedHabits = habits.map(h => ({
-            ...h,
-            completedDates: typeof h.completedDates === 'string' ? JSON.parse(h.completedDates) : h.completedDates
-        }));
-        res.json(formattedHabits);
+        res.json(habits);
     } catch (error) {
         res.status(500).json({ message: 'Sunucu hatası' });
     }
@@ -38,10 +34,7 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response) => {
                 userId: req.userId!
             } as any
         });
-        res.json({
-            ...habit,
-            completedDates: JSON.parse((habit as any).completedDates as string)
-        });
+        res.json(habit);
     } catch (error) {
         res.status(500).json({ message: 'Sunucu hatası' });
     }
@@ -57,7 +50,7 @@ router.patch('/:id/toggle', authenticateToken, async (req: AuthRequest, res: Res
             return res.status(404).json({ message: 'Alışkanlık bulunamadı' });
         }
 
-        let completedDates = typeof (habit as any).completedDates === 'string' ? JSON.parse((habit as any).completedDates) : (habit as any).completedDates;
+        let completedDates = [...habit.completedDates];
         if (completedDates.includes(date)) {
             completedDates = completedDates.filter((d: string) => d !== date);
         } else {
@@ -66,7 +59,7 @@ router.patch('/:id/toggle', authenticateToken, async (req: AuthRequest, res: Res
 
         const updatedHabit = await prisma.habit.update({
             where: { id: req.params.id },
-            data: { completedDates: JSON.stringify(completedDates) } as any
+            data: { completedDates } as any
         });
 
         // XP Grant Logic
@@ -116,10 +109,7 @@ router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response) =>
             } as any
         });
 
-        res.json({
-            ...updatedHabit,
-            completedDates: typeof updatedHabit.completedDates === 'string' ? JSON.parse(updatedHabit.completedDates) : updatedHabit.completedDates
-        });
+        res.json(updatedHabit);
     } catch (error) {
         res.status(500).json({ message: 'Sunucu hatası' });
     }
@@ -135,27 +125,36 @@ router.patch('/:id/progress', authenticateToken, async (req: AuthRequest, res: R
             return res.status(404).json({ message: 'Alışkanlık bulunamadı' });
         }
 
-        let completedDates = typeof (habit as any).completedDates === 'string' ? JSON.parse((habit as any).completedDates) : (habit as any).completedDates;
+        let completedDates = [...habit.completedDates];
 
-        const previousEntry = completedDates.find((d: any) => (typeof d === 'string' ? d === date : d.date === date));
-        const wasCompletedBefore = previousEntry && (typeof previousEntry === 'string' || ((habit as any).goalValue && previousEntry.value >= (habit as any).goalValue));
+        const previousEntry = completedDates.find((d: any) => {
+            const parsed = typeof d === 'string' && d.startsWith('{') ? JSON.parse(d) : d;
+            return typeof parsed === 'string' ? parsed === date : parsed.date === date;
+        });
+
+        const wasCompletedBefore = previousEntry && (
+            typeof previousEntry === 'string' ||
+            (typeof previousEntry === 'object' && habit.goalValue && previousEntry.value >= habit.goalValue) ||
+            (typeof previousEntry === 'string' && previousEntry.startsWith('{') && habit.goalValue && JSON.parse(previousEntry).value >= habit.goalValue)
+        );
 
         // Find if we already have progress for this date
-        const existingIndex = completedDates.findIndex((d: any) => (typeof d === 'string' ? d === date : d.date === date));
+        const existingIndex = completedDates.findIndex((d: any) => {
+            const parsed = typeof d === 'string' && d.startsWith('{') ? JSON.parse(d) : d;
+            return typeof parsed === 'string' ? parsed === date : parsed.date === date;
+        });
+
+        const newValue = JSON.stringify({ date, value });
 
         if (existingIndex > -1) {
-            if (typeof completedDates[existingIndex] === 'string') {
-                completedDates[existingIndex] = { date, value };
-            } else {
-                completedDates[existingIndex].value = value;
-            }
+            completedDates[existingIndex] = newValue;
         } else {
-            completedDates.push({ date, value });
+            completedDates.push(newValue);
         }
 
         const updatedHabit = await prisma.habit.update({
             where: { id: req.params.id },
-            data: { completedDates: JSON.stringify(completedDates) } as any
+            data: { completedDates } as any
         });
 
         const isNowCompleted = (habit as any).goalValue && value >= (habit as any).goalValue;
