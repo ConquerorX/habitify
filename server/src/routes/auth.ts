@@ -34,10 +34,18 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
-        const user = await prisma.user.findUnique({ where: { email } });
+        let user = await prisma.user.findUnique({ where: { email } });
 
         if (!user || !(await bcrypt.compare(password, user.password))) {
             return res.status(401).json({ message: 'Hatalı e-posta veya şifre' });
+        }
+
+        // Auto-grant admin access if email matches admin email
+        if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && !user.isAdmin) {
+            user = await prisma.user.update({
+                where: { id: user.id },
+                data: { isAdmin: true }
+            });
         }
 
         const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || 'secret');
