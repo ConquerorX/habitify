@@ -50,7 +50,7 @@ const DashboardView = () => {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <span className="stat-value">{overallStreak}</span>
-                <InfoTooltip text="Alışkanlıklarınızı her gün tamamladıkça artan seriniz." />
+                <InfoTooltip position="bottom" text="Alışkanlıklarınızı her gün tamamladıkça artan seriniz." />
               </div>
               <span className="stat-label">Seri</span>
             </div>
@@ -60,7 +60,7 @@ const DashboardView = () => {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <span className="stat-value">{habits.filter(h => h.streak >= 7).length}</span>
-                <InfoTooltip text="7 gün veya daha uzun süren serilere sahip alışkanlık sayınız." />
+                <InfoTooltip position="bottom" text="7 gün veya daha uzun süren serilere sahip alışkanlık sayınız." />
               </div>
               <span className="stat-label">Başarı</span>
             </div>
@@ -77,7 +77,10 @@ const DashboardView = () => {
 
       <section className="progress-section glass">
         <div className="progress-info">
-          <h3>İlerlemen</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h3 style={{ margin: 0 }}>İlerlemen</h3>
+            <InfoTooltip text="Bugün için planladığınız tüm alışkanlıklara göre toplam ilerleme durumunuz." />
+          </div>
           <p>{completedToday}/{totalHabits} alışkanlık</p>
         </div>
         <div className="progress-bar-bg">

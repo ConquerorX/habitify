@@ -103,15 +103,24 @@ const StatsView = () => {
 
                 <div className="stat-card glass summary-stats">
                     <div className="summary-item">
-                        <span className="summary-label">Planlar</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
+                            <span className="summary-label">Planlar</span>
+                            <InfoTooltip text="Takip ettiğiniz toplam aktif alışkanlık sayısı." />
+                        </div>
                         <span className="summary-value">{habits.length}</span>
                     </div>
                     <div className="summary-item">
-                        <span className="summary-label">En İyi Seri</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
+                            <span className="summary-label">En İyi Seri</span>
+                            <InfoTooltip text="Herhangi bir alışkanlıkta ulaştığınız en yüksek kesintisiz gün sayısı." />
+                        </div>
                         <span className="summary-value">{Math.max(0, ...habits.map(h => h.streak))}</span>
                     </div>
                     <div className="summary-item">
-                        <span className="summary-label">Verimlilik</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
+                            <span className="summary-label">Verimlilik</span>
+                            <InfoTooltip text="Alışkanlıklarınızı tamamlama oranınız. (Toplam tamamlanma / Haftalık hedef)" />
+                        </div>
                         <span className="summary-value">
                             {habits.length > 0 ?
                                 Math.round((habits.reduce((acc, h) => acc + h.completedDates.length, 0) / (habits.length * 7)) * 100)
