@@ -127,21 +127,34 @@ router.patch('/:id/progress', authenticateToken, async (req: AuthRequest, res: R
 
         let completedDates = [...habit.completedDates];
 
-        const previousEntry = completedDates.find((d: any) => {
-            const parsed = typeof d === 'string' && d.startsWith('{') ? JSON.parse(d) : d;
-            return typeof parsed === 'string' ? parsed === date : parsed.date === date;
+        const previousEntry = completedDates.find((d: string) => {
+            try {
+                if (d.startsWith('{')) {
+                    const parsed = JSON.parse(d);
+                    return parsed.date === date;
+                }
+                return d === date;
+            } catch (e) {
+                return d === date;
+            }
         });
 
-        const wasCompletedBefore = previousEntry && (
-            typeof previousEntry === 'string' ||
-            (typeof previousEntry === 'object' && habit.goalValue && previousEntry.value >= habit.goalValue) ||
-            (typeof previousEntry === 'string' && previousEntry.startsWith('{') && habit.goalValue && JSON.parse(previousEntry).value >= habit.goalValue)
+        const wasCompletedBefore = !!previousEntry && (
+            previousEntry === date ||
+            (previousEntry.startsWith('{') && (habit as any).goalValue && JSON.parse(previousEntry).value >= (habit as any).goalValue)
         );
 
         // Find if we already have progress for this date
-        const existingIndex = completedDates.findIndex((d: any) => {
-            const parsed = typeof d === 'string' && d.startsWith('{') ? JSON.parse(d) : d;
-            return typeof parsed === 'string' ? parsed === date : parsed.date === date;
+        const existingIndex = completedDates.findIndex((d: string) => {
+            try {
+                if (d.startsWith('{')) {
+                    const parsed = JSON.parse(d);
+                    return parsed.date === date;
+                }
+                return d === date;
+            } catch (e) {
+                return d === date;
+            }
         });
 
         const newValue = JSON.stringify({ date, value });
