@@ -16,6 +16,9 @@ const HabitForm = ({ onClose, initialData }: HabitFormProps) => {
   const [startTime, setStartTime] = useState(initialData?.startTime || '');
   const [endTime, setEndTime] = useState(initialData?.endTime || '');
   const [category, setCategory] = useState(initialData?.category || 'Genel');
+  const [isQuantity, setIsQuantity] = useState(initialData?.isQuantity || false);
+  const [goalValue, setGoalValue] = useState(initialData?.goalValue?.toString() || '');
+  const [unit, setUnit] = useState(initialData?.unit || '');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +29,10 @@ const HabitForm = ({ onClose, initialData }: HabitFormProps) => {
       frequency,
       startTime: startTime || undefined,
       endTime: endTime || undefined,
-      category
+      category,
+      isQuantity,
+      goalValue: isQuantity ? parseFloat(goalValue) : undefined,
+      unit: isQuantity ? unit : undefined
     };
 
     if (initialData) {
@@ -86,6 +92,51 @@ const HabitForm = ({ onClose, initialData }: HabitFormProps) => {
               </select>
             </div>
           </div>
+
+          <div className="form-group">
+            <label>Hedef Tipi</label>
+            <div className="type-toggle">
+              <button
+                type="button"
+                className={!isQuantity ? 'active' : ''}
+                onClick={() => setIsQuantity(false)}
+              >
+                Basit (✓)
+              </button>
+              <button
+                type="button"
+                className={isQuantity ? 'active' : ''}
+                onClick={() => setIsQuantity(true)}
+              >
+                Sayısal (123)
+              </button>
+            </div>
+          </div>
+
+          {isQuantity && (
+            <div className="form-row">
+              <div className="form-group">
+                <label>Hedef Değer</label>
+                <input
+                  type="number"
+                  value={goalValue}
+                  onChange={e => setGoalValue(e.target.value)}
+                  placeholder="Örn: 2000"
+                  required={isQuantity}
+                />
+              </div>
+              <div className="form-group">
+                <label>Birim</label>
+                <input
+                  type="text"
+                  value={unit}
+                  onChange={e => setUnit(e.target.value)}
+                  placeholder="Örn: ml, sayfa"
+                  required={isQuantity}
+                />
+              </div>
+            </div>
+          )}
 
           <div className="form-row">
             <div className="form-group">
@@ -184,6 +235,30 @@ const HabitForm = ({ onClose, initialData }: HabitFormProps) => {
         }
         .form-group input:focus, .form-group select:focus {
           border-color: var(--accent-primary);
+        }
+        .type-toggle {
+          display: flex;
+          background: var(--input-bg);
+          padding: 4px;
+          border-radius: 12px;
+          border: 1px solid var(--border-color);
+        }
+        .type-toggle button {
+          flex: 1;
+          padding: 8px;
+          border-radius: 8px;
+          border: none;
+          background: none;
+          color: var(--text-secondary);
+          font-size: 0.85rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .type-toggle button.active {
+          background: var(--accent-primary);
+          color: white;
+          box-shadow: 0 4px 12px rgba(var(--accent-primary-rgb), 0.3);
         }
         .submit-btn {
           width: 100%;

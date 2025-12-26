@@ -5,6 +5,8 @@ interface User {
     email: string;
     name?: string;
     isAdmin?: boolean;
+    xp: number;
+    level: number;
 }
 
 interface ImpersonationState {
@@ -22,6 +24,7 @@ interface AuthContextType {
     impersonation: ImpersonationState;
     startImpersonation: (token: string, user: User) => void;
     stopImpersonation: () => void;
+    updateUser: (updatedUser: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -87,6 +90,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
     };
 
+    const updateUser = (updatedData: Partial<User>) => {
+        if (!user) return;
+        const newUser = { ...user, ...updatedData };
+        setUser(newUser);
+        localStorage.setItem('user', JSON.stringify(newUser));
+    };
+
     return (
         <AuthContext.Provider value={{
             user,
@@ -96,7 +106,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             isLoading,
             impersonation,
             startImpersonation,
-            stopImpersonation
+            stopImpersonation,
+            updateUser
         }}>
             {children}
         </AuthContext.Provider>

@@ -1,21 +1,31 @@
-import { CheckCircle2, Flame, Award, Trash2, Play, Clock, Edit2 } from 'lucide-react';
+import { CheckCircle2, Flame, Award, Trash2, Play, Clock, Edit2, Plus, Minus } from 'lucide-react';
 import { useHabits } from '../context/HabitContext';
 import type { Habit } from '../context/HabitContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import InfoTooltip from '../components/InfoTooltip';
 import { useState } from 'react';
 import HabitForm from '../components/HabitForm';
+import ProfileBar from '../components/ProfileBar';
 
 const DashboardView = () => {
   const { habits, toggleHabit, deleteHabit } = useHabits();
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const today = new Date().toISOString().split('T')[0];
 
-  const completedToday = habits.filter(h => h.completedDates.includes(today)).length;
+  const completedToday = habits.filter(h => {
+    const entry = h.completedDates.find(e => typeof e === 'string' ? e === today : e.date === today);
+    if (!entry) return false;
+    if (h.isQuantity) {
+      const val = typeof entry === 'string' ? 0 : entry.value;
+      return val >= (h.goalValue || 0);
+    }
+    return true;
+  }).length;
   const totalHabits = habits.length;
   const progress = totalHabits > 0 ? (completedToday / totalHabits) * 100 : 0;
 
-  const allCompletedDates = Array.from(new Set(habits.flatMap(h => h.completedDates))).sort((a, b) => b.localeCompare(a));
+  const allCompletedEntries = habits.flatMap(h => h.completedDates);
+  const allCompletedDates = Array.from(new Set(allCompletedEntries.map(e => typeof e === 'string' ? e : e.date))).sort((a, b) => b.localeCompare(a));
 
   const calculateOverallStreak = (dates: string[]) => {
     if (dates.length === 0) return 0;
@@ -38,35 +48,34 @@ const DashboardView = () => {
 
   return (
     <div className="dashboard-container">
-      <header className="dashboard-header">
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="greeting">
-          <h1>Merhaba! 👋</h1>
-          <p>Bütünüyle harika bir gün olmasını dileriz.</p>
-        </motion.div>
-
-        <div className="streak-stats glass">
+      <header className="dashboard-header flex justify-between items-center mb-8">
+        <div className="greeting">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+            Merhaba, {habits.find(h => h.id)?.id ? 'Tekrar Hoş Geldin' : 'Bugün Harika Bir Gün!'}
+          </h1>
+          <p className="text-gray-400 mt-1">Hadi hedeflerine bir adım daha yaklaşalım.</p>
+        </div>
+        <div className="streak-stats glass flex gap-6 p-4 rounded-3xl">
           <div className="stat-item">
-            <Flame className={overallStreak > 0 ? 'active-flame' : ''} size={24} />
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span className="stat-value">{overallStreak}</span>
-                <InfoTooltip position="bottom" text="Alışkanlıklarınızı her gün tamamladıkça artan seriniz." />
-              </div>
+            <Flame className={`${overallStreak > 0 ? 'active-flame' : 'text-gray-500'}`} size={24} />
+            <div className="stat-info">
+              <span className="stat-value">{overallStreak}</span>
               <span className="stat-label">Seri</span>
             </div>
+            <InfoTooltip text="Art arda kaç gündür en az bir alışkanlığınızı tamamladığınızı gösterir." position="bottom" />
           </div>
-          <div className="stat-item">
-            <Award color="#facc15" size={24} />
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span className="stat-value">{habits.filter(h => h.streak >= 7).length}</span>
-                <InfoTooltip position="bottom" text="7 gün veya daha uzun süren serilere sahip alışkanlık sayınız." />
-              </div>
+          <div className="stat-item border-l border-white/10 pl-6">
+            <Award className="text-yellow-500" size={24} />
+            <div className="stat-info">
+              <span className="stat-value">%{Math.round(progress)}</span>
               <span className="stat-label">Başarı</span>
             </div>
+            <InfoTooltip text="Bugünkü alışkanlıklarınızın ne kadarını tamamladığınızı gösterir." position="bottom" />
           </div>
         </div>
       </header>
+
+      <ProfileBar />
 
       {editingHabit && (
         <HabitForm
@@ -75,7 +84,7 @@ const DashboardView = () => {
         />
       )}
 
-      <section className="progress-section glass">
+      <section className="progress-section glass mb-8">
         <div className="progress-info">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <h3 style={{ margin: 0 }}>İlerlemen</h3>
@@ -108,7 +117,6 @@ const DashboardView = () => {
                 <HabitCard
                   key={habit.id}
                   habit={habit}
-                  completed={habit.completedDates.includes(today)}
                   onToggle={() => toggleHabit(habit.id, today)}
                   onDelete={() => deleteHabit(habit.id)}
                   onEdit={() => setEditingHabit(habit)}
@@ -307,6 +315,34 @@ const DashboardView = () => {
           transform: scale(1.1);
         }
 
+        .quantity-controls {
+          display: flex;
+          align-items: center;
+          background: var(--input-bg);
+          border-radius: 12px;
+          padding: 2px;
+          border: 1px solid var(--border-color);
+        }
+
+        .q-btn {
+          background: none;
+          border: none;
+          color: var(--text-primary);
+          width: 28px;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          border-radius: 8px;
+          transition: all 0.2s;
+        }
+
+        .q-btn:hover {
+          background: var(--btn-secondary-bg);
+          color: var(--accent-primary);
+        }
+
         @media (max-width: 768px) {
           .dashboard-header {
             flex-direction: column;
@@ -364,40 +400,89 @@ const DashboardView = () => {
   );
 };
 
-const HabitCard = ({ habit, completed, onToggle, onDelete, onEdit }: { habit: Habit, completed: boolean, onToggle: () => void, onDelete: () => void, onEdit: () => void }) => (
-  <motion.div layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="habit-card glass">
-    <div className="habit-info">
-      {habit.startTime && (
-        <div className="habit-time">
-          <Clock size={12} />
-          {habit.startTime} - {habit.endTime}
+const HabitCard = ({ habit, onToggle, onDelete, onEdit }: { habit: Habit, onToggle: () => void, onDelete: () => void, onEdit: () => void }) => {
+  const { updateProgress } = useHabits();
+  const today = new Date().toISOString().split('T')[0];
+
+  const todayEntry = habit.completedDates.find(e => typeof e === 'string' ? e === today : e.date === today);
+  const currentProgress = typeof todayEntry === 'object' ? todayEntry.value : (todayEntry ? (habit.goalValue || 1) : 0);
+  const isCompleted = habit.isQuantity
+    ? (currentProgress >= (habit.goalValue || 0))
+    : !!todayEntry;
+
+  const handleIncrement = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!habit.isQuantity) return;
+    const step = habit.goalValue && habit.goalValue >= 100 ? 100 : 1;
+    updateProgress(habit.id, today, currentProgress + step);
+  };
+
+  const handleDecrement = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!habit.isQuantity) return;
+    const step = habit.goalValue && habit.goalValue >= 100 ? 100 : 1;
+    updateProgress(habit.id, today, Math.max(0, currentProgress - step));
+  };
+
+  return (
+    <motion.div layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="habit-card glass">
+      <div className="habit-info">
+        {habit.startTime && (
+          <div className="habit-time">
+            <Clock size={12} />
+            {habit.startTime} - {habit.endTime}
+          </div>
+        )}
+        <h4>{habit.title}</h4>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span className="freq-badge">{habit.frequency === 'daily' ? 'GÜNLÜK' : habit.frequency === 'weekly' ? 'HAFTALIK' : 'AYLIK'}</span>
+          {habit.isQuantity && (
+            <span className="freq-badge" style={{ background: 'var(--accent-primary)', color: 'white' }}>
+              {currentProgress} / {habit.goalValue} {habit.unit}
+            </span>
+          )}
         </div>
-      )}
-      <h4>{habit.title}</h4>
-      <span className="freq-badge">{habit.frequency === 'daily' ? 'GÜNLÜK' : habit.frequency === 'weekly' ? 'HAFTALIK' : 'AYLIK'}</span>
-      {habit.streak > 0 && (
-        <div className="streak-tag">
-          <Flame size={12} fill="#ff4500" />
-          {habit.streak} gün seri
-        </div>
-      )}
-    </div>
-    <div className="habit-actions">
-      <button className="delete-btn" onClick={onEdit} title="Düzenle">
-        <Edit2 size={16} />
-      </button>
-      <button className="delete-btn" onClick={onDelete} title="Sil">
-        <Trash2 size={18} />
-      </button>
-      <motion.button
-        whileTap={{ scale: 0.9 }}
-        className={`complete-btn ${completed ? 'completed' : ''}`}
-        onClick={onToggle}
-      >
-        {completed ? <CheckCircle2 size={24} /> : <Play size={22} />}
-      </motion.button>
-    </div>
-  </motion.div>
-);
+
+        {habit.isQuantity && (
+          <div className="progress-bar-bg" style={{ height: '6px', marginTop: '12px', width: '100px' }}>
+            <motion.div
+              className="progress-bar-fill"
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min(100, (currentProgress / (habit.goalValue || 1)) * 100)}%` }}
+            />
+          </div>
+        )}
+
+        {habit.streak > 0 && (
+          <div className="streak-tag">
+            <Flame size={12} fill="#ff4500" />
+            {habit.streak} gün seri
+          </div>
+        )}
+      </div>
+      <div className="habit-actions">
+        {habit.isQuantity && (
+          <div className="quantity-controls">
+            <button className="q-btn" onClick={handleDecrement}><Minus size={14} /></button>
+            <button className="q-btn" onClick={handleIncrement}><Plus size={14} /></button>
+          </div>
+        )}
+        <button className="delete-btn" onClick={onEdit} title="Düzenle">
+          <Edit2 size={16} />
+        </button>
+        <button className="delete-btn" onClick={onDelete} title="Sil">
+          <Trash2 size={18} />
+        </button>
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          className={`complete-btn ${isCompleted ? 'completed' : ''}`}
+          onClick={onToggle}
+        >
+          {isCompleted ? <CheckCircle2 size={24} /> : <Play size={22} />}
+        </motion.button>
+      </div>
+    </motion.div>
+  );
+};
 
 export default DashboardView;
